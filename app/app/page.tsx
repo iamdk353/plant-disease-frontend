@@ -68,13 +68,13 @@ export default function DashboardPage() {
             </span>
             <span>Diagnosis</span>
           </Link>
-          <a
+          <Link
             className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
-            href="#"
+            href="/app/adivise"
           >
             <span className="material-symbols-outlined">psychology</span>
             <span>Advisory</span>
-          </a>
+          </Link>
           <a
             className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
             href="#"
@@ -134,31 +134,33 @@ export default function DashboardPage() {
             </div>
 
             {/* What Should I Plant? Card */}
-            <div className="group relative overflow-hidden bg-surface-container-lowest p-8 rounded-xl shadow-[30px_0_60px_-5px_rgba(24,29,25,0.04)] cursor-pointer active:scale-[0.98] transition-all border-none">
-              <div className="absolute -top-4 -right-4 w-32 h-32 bg-tertiary-container/10 rounded-full blur-3xl group-hover:bg-tertiary-container/20 transition-colors"></div>
-              <div className="flex flex-col gap-6 relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-secondary-container/30 flex items-center justify-center text-secondary">
-                    <span className="material-symbols-outlined text-4xl">
-                      potted_plant
-                    </span>
+            <Link href="/app/adivise">
+              <div className="group relative overflow-hidden bg-surface-container-lowest p-8 rounded-xl shadow-[30px_0_60px_-5px_rgba(24,29,25,0.04)] cursor-pointer active:scale-[0.98] transition-all border-none">
+                <div className="absolute -top-4 -right-4 w-32 h-32 bg-tertiary-container/10 rounded-full blur-3xl group-hover:bg-tertiary-container/20 transition-colors"></div>
+                <div className="flex flex-col gap-6 relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-secondary-container/30 flex items-center justify-center text-secondary">
+                      <span className="material-symbols-outlined text-4xl">
+                        potted_plant
+                      </span>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+                      <span className="material-symbols-outlined">
+                        location_on
+                      </span>
+                    </div>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-                    <span className="material-symbols-outlined">
-                      location_on
-                    </span>
+                  <div>
+                    <h3 className="text-2xl font-bold font-headline text-on-surface mb-1">
+                      What Should I Plant?
+                    </h3>
+                    <p className="text-on-surface-variant text-sm">
+                      Analyze soil and local climate
+                    </p>
                   </div>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold font-headline text-on-surface mb-1">
-                    What Should I Plant?
-                  </h3>
-                  <p className="text-on-surface-variant text-sm">
-                    Analyze soil and local climate
-                  </p>
                 </div>
               </div>
-            </div>
+            </Link>
           </section>
 
           {/* Recent Activity Section */}
@@ -258,15 +260,15 @@ export default function DashboardPage() {
             Detect
           </span>
         </button>
-        <a
+        <Link
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
-          href="#"
+          href="/app/adivise"
         >
           <span className="material-symbols-outlined">grass</span>
           <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
-            Advisory
+            Advisory feew
           </span>
-        </a>
+        </Link>
         <a
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
           href="#"
