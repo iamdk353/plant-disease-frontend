@@ -1,7 +1,26 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { auth } from "../../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function DashboardPage() {
+  const [userName, setUserName] = useState("Farmer");
+  const [greeting, setGreeting] = useState("Hello");
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 18) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user?.displayName) {
+        setUserName(user.displayName.split(" ")[0]); // Grab first name
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -56,7 +75,9 @@ export default function DashboardPage() {
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl">
         <div className="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
-          <div className="text-2xl font-extrabold text-primary font-headline tracking-tighter">AgriAI</div>
+          <div className="text-2xl font-extrabold text-primary font-headline tracking-tighter">
+            AgriAI
+          </div>
           <div className="flex items-center gap-4">
             <span className="material-symbols-outlined text-primary cursor-pointer active:scale-95 transition-transform duration-200">
               account_circle
@@ -64,13 +85,17 @@ export default function DashboardPage() {
           </div>
         </div>
       </nav>
-      
+
       <div className="flex pt-20">
         {/* SideNavBar (Hidden on mobile) */}
         <aside className="hidden md:flex flex-col h-[calc(100vh-5rem)] py-8 gap-2 w-72 bg-surface rounded-r-[3rem] sticky top-20 shadow-[30px_0_60px_-5px_rgba(24,29,25,0.04)]">
           <div className="px-8 mb-8">
-            <div className="text-xl font-black text-primary font-headline">AgriAI</div>
-            <div className="text-sm font-semibold opacity-60">Precision Greenhouse</div>
+            <div className="text-xl font-black text-primary font-headline">
+              AgriAI
+            </div>
+            <div className="text-sm font-semibold opacity-60">
+              Precision Greenhouse
+            </div>
           </div>
           <a
             className="bg-primary text-on-primary rounded-full mx-4 py-4 px-6 flex items-center gap-3 active:scale-[0.98] transition-all font-semibold"
@@ -83,7 +108,9 @@ export default function DashboardPage() {
             className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
             href="#"
           >
-            <span className="material-symbols-outlined">center_focus_strong</span>
+            <span className="material-symbols-outlined">
+              center_focus_strong
+            </span>
             <span>Diagnosis</span>
           </a>
           <a
@@ -112,17 +139,17 @@ export default function DashboardPage() {
           {/* Header Section */}
           <header className="mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline text-on-surface mb-2">
-              Good morning, Farmer!
+              {greeting}, {userName}!
             </h1>
             <p className="text-lg text-on-surface-variant/80 font-medium max-w-xl">
-              The soil moisture in Sector B is optimal. Today is a perfect day for tomato harvesting.
+              Happy Harvesting..!
             </p>
           </header>
 
           {/* Primary CTAs: Large Rounded Cards */}
           <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             {/* Diagnose My Crop Card */}
-            <div 
+            <div
               onClick={startCamera}
               className="group relative overflow-hidden bg-surface-container-lowest p-8 rounded-xl shadow-[30px_0_60px_-5px_rgba(24,29,25,0.04)] cursor-pointer active:scale-[0.98] transition-all border-none"
             >
@@ -130,15 +157,23 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-4xl">eco</span>
+                    <span className="material-symbols-outlined text-4xl">
+                      eco
+                    </span>
                   </div>
                   <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-                    <span className="material-symbols-outlined">photo_camera</span>
+                    <span className="material-symbols-outlined">
+                      photo_camera
+                    </span>
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold font-headline text-on-surface mb-1">Diagnose My Crop</h3>
-                  <p className="text-on-surface-variant text-sm">Scan leaf issues with AI vision</p>
+                  <h3 className="text-2xl font-bold font-headline text-on-surface mb-1">
+                    Diagnose My Crop
+                  </h3>
+                  <p className="text-on-surface-variant text-sm">
+                    Scan leaf issues with AI vision
+                  </p>
                 </div>
               </div>
             </div>
@@ -149,15 +184,23 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-secondary-container/30 flex items-center justify-center text-secondary">
-                    <span className="material-symbols-outlined text-4xl">potted_plant</span>
+                    <span className="material-symbols-outlined text-4xl">
+                      potted_plant
+                    </span>
                   </div>
                   <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-                    <span className="material-symbols-outlined">location_on</span>
+                    <span className="material-symbols-outlined">
+                      location_on
+                    </span>
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold font-headline text-on-surface mb-1">What Should I Plant?</h3>
-                  <p className="text-on-surface-variant text-sm">Analyze soil and local climate</p>
+                  <h3 className="text-2xl font-bold font-headline text-on-surface mb-1">
+                    What Should I Plant?
+                  </h3>
+                  <p className="text-on-surface-variant text-sm">
+                    Analyze soil and local climate
+                  </p>
                 </div>
               </div>
             </div>
@@ -166,8 +209,12 @@ export default function DashboardPage() {
           {/* Recent Activity Section */}
           <section>
             <div className="flex items-center justify-between mb-6 px-2">
-              <h2 className="text-xl font-bold tracking-tight font-headline">Recent Activity</h2>
-              <button className="text-sm font-bold text-primary hover:underline">View All</button>
+              <h2 className="text-xl font-bold tracking-tight font-headline">
+                Recent Activity
+              </h2>
+              <button className="text-sm font-bold text-primary hover:underline">
+                View All
+              </button>
             </div>
             <div className="space-y-4">
               {/* Activity Item 1 */}
@@ -184,10 +231,16 @@ export default function DashboardPage() {
                     <span className="px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-[10px] font-bold uppercase tracking-wider">
                       Warning
                     </span>
-                    <span className="text-xs text-on-surface-variant font-medium">May 12, 09:45 AM</span>
+                    <span className="text-xs text-on-surface-variant font-medium">
+                      May 12, 09:45 AM
+                    </span>
                   </div>
-                  <h4 className="font-bold text-lg text-on-surface">Tomato Early Blight</h4>
-                  <p className="text-sm text-on-surface-variant">Fungal infection detected in Sector A</p>
+                  <h4 className="font-bold text-lg text-on-surface">
+                    Tomato Early Blight
+                  </h4>
+                  <p className="text-sm text-on-surface-variant">
+                    Fungal infection detected in Sector A
+                  </p>
                 </div>
                 <span className="material-symbols-outlined text-on-surface-variant opacity-40 group-hover:opacity-100 transition-opacity">
                   chevron_right
@@ -208,10 +261,16 @@ export default function DashboardPage() {
                     <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-wider">
                       Healthy
                     </span>
-                    <span className="text-xs text-on-surface-variant font-medium">May 10, 04:20 PM</span>
+                    <span className="text-xs text-on-surface-variant font-medium">
+                      May 10, 04:20 PM
+                    </span>
                   </div>
-                  <h4 className="font-bold text-lg text-on-surface">Potato Foliage</h4>
-                  <p className="text-sm text-on-surface-variant">Optimal nutrient levels detected</p>
+                  <h4 className="font-bold text-lg text-on-surface">
+                    Potato Foliage
+                  </h4>
+                  <p className="text-sm text-on-surface-variant">
+                    Optimal nutrient levels detected
+                  </p>
                 </div>
                 <span className="material-symbols-outlined text-on-surface-variant opacity-40 group-hover:opacity-100 transition-opacity">
                   chevron_right
@@ -228,7 +287,10 @@ export default function DashboardPage() {
           className="flex flex-col items-center justify-center bg-gradient-to-br from-[#486808] to-[#85A947] text-white rounded-full p-4 scale-110 -translate-y-2 shadow-lg transition-all duration-300 ease-out"
           href="#"
         >
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
             home
           </span>
         </a>
@@ -237,21 +299,27 @@ export default function DashboardPage() {
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
         >
           <span className="material-symbols-outlined">camera_alt</span>
-          <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">Detect</span>
+          <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
+            Detect
+          </span>
         </button>
         <a
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
           href="#"
         >
           <span className="material-symbols-outlined">grass</span>
-          <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">Advisory</span>
+          <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
+            Advisory
+          </span>
         </a>
         <a
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
           href="#"
         >
           <span className="material-symbols-outlined">person</span>
-          <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">Profile</span>
+          <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
+            Profile
+          </span>
         </a>
       </nav>
 
@@ -278,7 +346,9 @@ export default function DashboardPage() {
               onClick={capturePhoto}
               className="bg-primary text-white w-20 h-20 rounded-full border-[6px] border-white/60 shadow-2xl flex items-center justify-center active:scale-95 transition-transform"
             >
-              <span className="material-symbols-outlined text-4xl">photo_camera</span>
+              <span className="material-symbols-outlined text-4xl">
+                photo_camera
+              </span>
             </button>
           </div>
         </div>
@@ -295,34 +365,44 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
-          <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0">Analyzing Crop...</h2>
+          <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0">
+            Analyzing Crop...
+          </h2>
           <div className="relative w-full max-w-sm h-auto max-h-[50vh] aspect-[3/4] mb-8 shrink mx-auto rounded-[2rem] shadow-2xl border-4 border-primary/20 overflow-hidden">
-             <img src={capturedImage} alt="Captured crop" className="w-full h-full object-cover" />
-             {/* Simple scanning animation overlay */}
-             <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none"></div>
+            <img
+              src={capturedImage}
+              alt="Captured crop"
+              className="w-full h-full object-cover"
+            />
+            {/* Simple scanning animation overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none"></div>
           </div>
-          <style dangerouslySetInnerHTML={{__html: `
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
             @keyframes scan {
               0% { transform: translateY(-100%); }
               100% { transform: translateY(100%); }
             }
-          `}} />
+          `,
+            }}
+          />
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-             <button 
-               onClick={() => {
-                 setCapturedImage(null);
-                 startCamera(); // Restart camera to try again
-               }}
-               className="flex-1 py-4 rounded-full font-bold bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition active:scale-[0.98]"
-             >
-               Retake Photo
-             </button>
-             <button 
-               className="flex-1 py-4 rounded-full font-bold signature-gradient text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2"
-             >
-               <span>Run Diagnostic</span>
-               <span className="material-symbols-outlined text-xl">psychology</span>
-             </button>
+            <button
+              onClick={() => {
+                setCapturedImage(null);
+                startCamera(); // Restart camera to try again
+              }}
+              className="flex-1 py-4 rounded-full font-bold bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition active:scale-[0.98]"
+            >
+              Retake Photo
+            </button>
+            <button className="flex-1 py-4 rounded-full font-bold signature-gradient text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2">
+              <span>Run Diagnostic</span>
+              <span className="material-symbols-outlined text-xl">
+                psychology
+              </span>
+            </button>
           </div>
         </div>
       )}
