@@ -1,7 +1,9 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [userName, setUserName] = useState("Farmer");
@@ -21,54 +23,7 @@ export default function DashboardPage() {
 
     return () => unsubscribe();
   }, []);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-
-  const startCamera = async () => {
-    setIsCameraOpen(true);
-    setCapturedImage(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      streamRef.current = stream;
-      // Need a slight timeout in some browsers to ensure the video ref is mounted
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      }, 50);
-    } catch (err) {
-      console.error("Error accessing camera:", err);
-      alert("Could not access camera. Please check permissions.");
-      setIsCameraOpen(false);
-    }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setIsCameraOpen(false);
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement("canvas");
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-        const dataUrl = canvas.toDataURL("image/jpeg");
-        setCapturedImage(dataUrl); // Save image to state
-        stopCamera();
-      }
-    }
-  };
+  const router = useRouter();
 
   return (
     <div className="bg-surface text-on-surface min-h-screen font-body relative">
@@ -104,15 +59,15 @@ export default function DashboardPage() {
             <span className="material-symbols-outlined">home</span>
             <span>Home</span>
           </a>
-          <a
+          <Link
             className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
-            href="#"
+            href="/app/diagnoise"
           >
             <span className="material-symbols-outlined">
               center_focus_strong
             </span>
             <span>Diagnosis</span>
-          </a>
+          </Link>
           <a
             className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
             href="#"
@@ -150,7 +105,7 @@ export default function DashboardPage() {
           <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             {/* Diagnose My Crop Card */}
             <div
-              onClick={startCamera}
+              onClick={() => router.push("/app/diagnoise")}
               className="group relative overflow-hidden bg-surface-container-lowest p-8 rounded-xl shadow-[30px_0_60px_-5px_rgba(24,29,25,0.04)] cursor-pointer active:scale-[0.98] transition-all border-none"
             >
               <div className="absolute -top-4 -right-4 w-32 h-32 bg-primary-container/10 rounded-full blur-3xl group-hover:bg-primary-container/20 transition-colors"></div>
@@ -295,7 +250,7 @@ export default function DashboardPage() {
           </span>
         </a>
         <button
-          onClick={startCamera}
+          onClick={() => router.push("/app/diagnoise")}
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
         >
           <span className="material-symbols-outlined">camera_alt</span>
@@ -322,90 +277,6 @@ export default function DashboardPage() {
           </span>
         </a>
       </nav>
-
-      {/* Live Camera Overlay Modal */}
-      {isCameraOpen && (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center h-screen w-screen overflow-hidden">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            controls={false}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute top-6 right-6">
-            <button
-              onClick={stopCamera}
-              className="bg-black/50 text-white w-12 h-12 rounded-full flex justify-center items-center hover:bg-black/80 backdrop-blur-md transition"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
-          <div className="absolute bottom-12 left-0 right-0 flex justify-center pb-safe">
-            <button
-              onClick={capturePhoto}
-              className="bg-primary text-white w-20 h-20 rounded-full border-[6px] border-white/60 shadow-2xl flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <span className="material-symbols-outlined text-4xl">
-                photo_camera
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Captured Image Preview Overlay Modal */}
-      {capturedImage && (
-        <div className="fixed inset-0 z-[100] bg-surface flex flex-col items-center justify-center p-6 sm:p-12">
-          <div className="absolute top-6 right-6">
-            <button
-              onClick={() => setCapturedImage(null)}
-              className="bg-surface-container-high text-on-surface w-12 h-12 rounded-full flex justify-center items-center hover:bg-surface-container-highest transition"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
-          <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0">
-            Analyzing Crop...
-          </h2>
-          <div className="relative w-full max-w-sm h-auto max-h-[50vh] aspect-[3/4] mb-8 shrink mx-auto rounded-[2rem] shadow-2xl border-4 border-primary/20 overflow-hidden">
-            <img
-              src={capturedImage}
-              alt="Captured crop"
-              className="w-full h-full object-cover"
-            />
-            {/* Simple scanning animation overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none"></div>
-          </div>
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `
-            @keyframes scan {
-              0% { transform: translateY(-100%); }
-              100% { transform: translateY(100%); }
-            }
-          `,
-            }}
-          />
-          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-            <button
-              onClick={() => {
-                setCapturedImage(null);
-                startCamera(); // Restart camera to try again
-              }}
-              className="flex-1 py-4 rounded-full font-bold bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition active:scale-[0.98]"
-            >
-              Retake Photo
-            </button>
-            <button className="flex-1 py-4 rounded-full font-bold signature-gradient text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2">
-              <span>Run Diagnostic</span>
-              <span className="material-symbols-outlined text-xl">
-                psychology
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
