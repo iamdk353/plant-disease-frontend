@@ -4,6 +4,7 @@ import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Nav from "../components/Nav";
 
 export default function DashboardPage() {
   const [userName, setUserName] = useState("Farmer");
@@ -27,70 +28,11 @@ export default function DashboardPage() {
 
   return (
     <div className="bg-surface text-on-surface min-h-screen font-body relative">
-      {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl">
-        <div className="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
-          <div className="text-2xl font-extrabold text-primary font-headline tracking-tighter">
-            AgriAI
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-primary cursor-pointer active:scale-95 transition-transform duration-200">
-              account_circle
-            </span>
-          </div>
-        </div>
-      </nav>
-
       <div className="flex pt-20">
-        {/* SideNavBar (Hidden on mobile) */}
-        <aside className="hidden md:flex flex-col h-[calc(100vh-5rem)] py-8 gap-2 w-72 bg-surface rounded-r-[3rem] sticky top-20 shadow-[30px_0_60px_-5px_rgba(24,29,25,0.04)]">
-          <div className="px-8 mb-8">
-            <div className="text-xl font-black text-primary font-headline">
-              AgriAI
-            </div>
-            <div className="text-sm font-semibold opacity-60">
-              Precision Greenhouse
-            </div>
-          </div>
-          <a
-            className="bg-primary text-on-primary rounded-full mx-4 py-4 px-6 flex items-center gap-3 active:scale-[0.98] transition-all font-semibold"
-            href="#"
-          >
-            <span className="material-symbols-outlined">home</span>
-            <span>Home</span>
-          </a>
-          <Link
-            className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
-            href="/app/diagnoise"
-          >
-            <span className="material-symbols-outlined">
-              center_focus_strong
-            </span>
-            <span>Diagnosis</span>
-          </Link>
-          <Link
-            className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
-            href="/app/adivise"
-          >
-            <span className="material-symbols-outlined">psychology</span>
-            <span>Advisory</span>
-          </Link>
-          <a
-            className="text-on-surface mx-4 py-4 px-6 flex items-center gap-3 hover:bg-surface-container-low rounded-full active:scale-[0.98] transition-all font-semibold"
-            href="#"
-          >
-            <span className="material-symbols-outlined">history</span>
-            <span>History</span>
-          </a>
-          <div className="mt-auto px-4">
-            <button className="w-full py-4 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
-              Get Support
-            </button>
-          </div>
-        </aside>
+        <Nav />
 
         {/* Main Content Canvas */}
-        <main className="flex-1 px-6 md:px-12 py-8 max-w-5xl">
+        <main className="flex-1 px-6 md:px-12 py-8 max-w-5xl  mx-auto">
           {/* Header Section */}
           <header className="mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline text-on-surface mb-2">
