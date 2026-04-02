@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-tertiary-fixed-dim: #ffaaf5;
+  --color-on-surface-variant: #44493a;
+  --color-on-secondary: #ffffff;
+  --color-on-error: #ffffff;
+  --color-on-secondary-fixed-variant: #165200;
+  --color-primary-container: #85a947;
+  --color-tertiary-fixed: #ffd7f6;
+  --color-on-tertiary-fixed-variant: #6f2b6d;
+  --color-on-secondary-container: #35721e;
+  --color-surface-container-lowest: #ffffff;
+  --color-secondary-container: #b0f591;
+  --color-surface-container-high: #e5e9e3;
+  --color-outline: #747968;
+  --color-primary: #486808;
+  --color-inverse-surface: #2d322e;
+  --color-on-primary-fixed-variant: #354e00;
+  --color-error-container: #ffdad6;
+  --color-background: #f6faf4;
+  --color-secondary: #2f6b19;
+  --color-surface-dim: #d7dbd5;
+  --color-surface-container-low: #f1f5ef;
+  --color-surface-container: #ebefe9;
+  --color-tertiary: #8b4386;
+  --color-surface-variant: #dfe4de;
+  --color-surface-container-highest: #dfe4de;
+  --color-on-tertiary: #ffffff;
+  --color-surface-tint: #486808;
+  --color-on-secondary-fixed: #052100;
+  --color-secondary-fixed: #b0f591;
+  --color-on-primary: #ffffff;
+  --color-tertiary-container: #d282ca;
+  --color-on-primary-fixed: #131f00;
+  --color-on-primary-container: #263b00;
+  --color-on-tertiary-fixed: #380039;
+  --color-secondary-fixed-dim: #95d878;
+  --color-error: #ba1a1a;
+  --color-inverse-primary: #add36c;
+  --color-on-surface: #181d19;
+  --color-on-tertiary-container: #5a175a;
+  --color-on-background: #181d19;
+  --color-surface: #f6faf4;
+  --color-on-error-container: #93000a;
+  --color-surface-bright: #f6faf4;
+  --color-outline-variant: #c4c9b5;
+  --color-inverse-on-surface: #eef2ec;
+  --color-primary-fixed-dim: #add36c;
+  --color-primary-fixed: #c8f085;
+
+  --font-headline: var(--font-manrope);
+  --font-body: var(--font-inter);
+  --font-label: var(--font-inter);
+
+  --radius-DEFAULT: 1rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-full: 9999px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  .glass-nav {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .signature-gradient {
+    background: linear-gradient(135deg, #486808 0%, #85a947 100%);
+  }
+  .soft-shadow {
+    box-shadow: 0 30px 60px -5px rgba(24, 29, 25, 0.05);
+  }
 }
