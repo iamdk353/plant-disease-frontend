@@ -1,6 +1,33 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../../lib/firebase";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/"); // Redirect to the dashboard/home upon successful login
+    } catch (err: any) {
+      setError(err.message || "Failed to log in.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen w-full">
       <main className="flex-grow grid lg:grid-cols-2 min-h-screen">
@@ -62,7 +89,12 @@ export default function LoginPage() {
                 Log in to access your digital insights and dashboard.
               </p>
             </div>
-            <form className="space-y-6">
+            {error && (
+              <div className="mb-6 p-4 bg-error-container text-on-error-container rounded-lg text-sm font-medium">
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
                 <label className="font-headline font-semibold text-sm text-on-surface-variant ml-2">
                   Email Address
@@ -80,6 +112,9 @@ export default function LoginPage() {
                     className="block w-full h-16 pl-14 pr-5 bg-surface-container-high border-0 rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant font-medium"
                     placeholder="john@example.com"
                     type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -100,6 +135,9 @@ export default function LoginPage() {
                     className="block w-full h-16 pl-14 pr-5 bg-surface-container-high border-0 rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant font-medium"
                     placeholder="••••••••"
                     type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
               </div>
@@ -113,16 +151,19 @@ export default function LoginPage() {
               </div>
               <div className="pt-4">
                 <button
-                  className="w-full h-16 signature-gradient text-on-primary font-headline font-bold rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all text-lg flex items-center justify-center gap-3"
-                  type="button"
+                  disabled={loading}
+                  className="w-full h-16 signature-gradient text-on-primary font-headline font-bold rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all text-lg flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                  type="submit"
                 >
-                  Login to Account
-                  <span
-                    className="material-symbols-outlined"
-                    data-icon="arrow_forward"
-                  >
-                    arrow_forward
-                  </span>
+                  {loading ? "Logging In..." : "Login to Account"}
+                  {!loading && (
+                    <span
+                      className="material-symbols-outlined"
+                      data-icon="arrow_forward"
+                    >
+                      arrow_forward
+                    </span>
+                  )}
                 </button>
               </div>
             </form>
