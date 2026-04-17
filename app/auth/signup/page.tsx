@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../../lib/firebase";
 
 export default function SignupPage() {
@@ -33,6 +33,21 @@ export default function SignupPage() {
       router.push("/"); // Redirect after signup
     } catch (err: any) {
       setError(err.message || "Failed to create an account.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push("/app");
+    } catch (err: any) {
+      setError(err.message || "Google login failed");
     } finally {
       setLoading(false);
     }
@@ -140,6 +155,27 @@ export default function SignupPage() {
                   {!loading && (
                     <span className="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
                   )}
+                </button>
+              </div>
+
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-outline-variant"></span>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-surface text-on-surface-variant font-medium">Or continue with</span>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <button
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  type="button"
+                  className="w-full h-16 bg-surface-container-high border border-outline-variant text-on-surface font-headline font-semibold rounded-full shadow-sm hover:bg-surface-container-highest active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  <img src="https://developers.google.com/identity/images/g-logo.png" className="h-6 w-6" alt="Google" />
+                  Continue with Google
                 </button>
               </div>
             </form>

@@ -1,7 +1,20 @@
+"use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Link from "next/link";
 import Nav from "../../components/Nav";
 
 export default function AdvisoryPage() {
+  const { user, loading } = useCurrentUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
+
   return (
     <div className="min-h-screen pb-32 bg-surface text-on-surface font-body overflow-x-hidden">
       <Nav />

@@ -1,6 +1,19 @@
+"use client";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function Home() {
+  const { user, loading } = useCurrentUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/app");
+    }
+  }, [user, loading, router]);
+
   return (
     <>
       {/* TopNavBar */}
@@ -11,34 +24,34 @@ export default function Home() {
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a
-              className="text-[#486808] font-headline tracking-tight font-bold border-b-2 border-[#486808] pb-1"
-              href="#"
+              className="text-[#181d19]/70 hover:text-[#486808] font-headline tracking-tight font-semibold transition-colors"
+              href="#features"
             >
               Features
             </a>
             <a
               className="text-[#181d19]/70 hover:text-[#486808] font-headline tracking-tight font-semibold transition-colors"
-              href="#"
+              href="#advisory"
             >
               Advisory
             </a>
             <a
               className="text-[#181d19]/70 hover:text-[#486808] font-headline tracking-tight font-semibold transition-colors"
-              href="#"
+              href="#pricing"
             >
               Pricing
             </a>
             <a
               className="text-[#181d19]/70 hover:text-[#486808] font-headline tracking-tight font-semibold transition-colors"
-              href="#"
+              href="#community"
             >
               Community
             </a>
           </div>
           <div className="flex items-center gap-4">
-            <button className="hidden md:block px-6 py-2 text-[#486808] font-semibold hover:bg-[#f1f5ef] rounded-full transition-all duration-200">
+            <Link href="/auth/login" className="hidden md:block px-6 py-2 text-[#486808] font-semibold hover:bg-[#f1f5ef] rounded-full transition-all duration-200">
               Login
-            </button>
+            </Link>
             <Link href="/auth/signup" className="px-6 py-3 signature-gradient text-on-primary font-bold rounded-full transition-all active:scale-95 duration-200">
               Get Started
             </Link>
@@ -115,7 +128,7 @@ export default function Home() {
           </div>
         </section>
         {/* Features Bento Grid */}
-        <section className="bg-surface-container-low py-24">
+        <section id="features" className="bg-surface-container-low py-24">
           <div className="max-w-7xl mx-auto px-8">
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
               <div className="max-w-2xl">
@@ -170,7 +183,7 @@ export default function Home() {
                 </div>
               </div>
               {/* Feature Card 2 */}
-              <div className="bg-primary p-10 rounded-lg flex flex-col justify-between text-on-primary soft-shadow">
+              <div id="advisory" className="bg-primary p-10 rounded-lg flex flex-col justify-between text-on-primary soft-shadow">
                 <div className="space-y-6">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                     <span
@@ -211,7 +224,7 @@ export default function Home() {
                 </p>
               </div>
               {/* Feature Card 4 */}
-              <div className="md:col-span-2 bg-secondary-container p-10 rounded-lg flex items-center justify-between gap-8 soft-shadow overflow-hidden relative">
+              <div id="community" className="md:col-span-2 bg-secondary-container p-10 rounded-lg flex items-center justify-between gap-8 soft-shadow overflow-hidden relative">
                 <div className="relative z-10 max-w-md">
                   <h3 className="text-2xl font-headline font-bold text-on-secondary-container mb-4">
                     Farmer Community
@@ -309,7 +322,7 @@ export default function Home() {
           </div>
         </section>
         {/* Call to Action */}
-        <section className="py-24 px-8">
+        <section id="pricing" className="py-24 px-8">
           <div className="max-w-5xl mx-auto text-center space-y-10">
             <h2 className="text-4xl md:text-6xl font-headline font-extrabold text-on-surface">
               Ready to watch your harvest thrive?

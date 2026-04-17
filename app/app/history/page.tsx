@@ -1,6 +1,19 @@
+"use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Link from "next/link";
 
 export default function HistoryProfilePage() {
+  const { user, loading } = useCurrentUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
+
   return (
     <div className="bg-surface text-on-surface font-body min-h-screen pb-32 overflow-x-hidden">
       {/* TopNavBar */}

@@ -5,25 +5,27 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Nav from "../components/Nav";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function DashboardPage() {
+  const { user, loading } = useCurrentUser();
   const [userName, setUserName] = useState("Farmer");
   const [greeting, setGreeting] = useState("Hello");
 
   useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good morning");
     else if (hour < 18) setGreeting("Good afternoon");
     else setGreeting("Good evening");
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user?.displayName) {
-        setUserName(user.displayName.split(" ")[0]); // Grab first name
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+    if (user?.displayName) {
+      setUserName(user.displayName.split(" ")[0]);
+    }
+  }, [user, loading]);
   const router = useRouter();
 
   return (

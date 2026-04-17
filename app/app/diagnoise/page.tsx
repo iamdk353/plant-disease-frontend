@@ -2,8 +2,10 @@
 
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function DiagnosePage() {
+  const { user, loading } = useCurrentUser();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -29,6 +31,10 @@ export default function DiagnosePage() {
   };
 
   useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+      return;
+    }
     startCamera();
     return () => {
       if (streamRef.current) {
@@ -84,9 +90,9 @@ export default function DiagnosePage() {
             </button>
           </div>
           <div className="absolute top-6 left-6 z-10">
-             <div className="bg-black/50 text-white px-4 py-2 rounded-full backdrop-blur-md font-bold font-headline">
-               Diagnose Crop
-             </div>
+            <div className="bg-black/50 text-white px-4 py-2 rounded-full backdrop-blur-md font-bold font-headline">
+              Diagnose Crop
+            </div>
           </div>
           <div className="absolute bottom-12 left-0 right-0 flex justify-center pb-safe">
             <button

@@ -1,7 +1,20 @@
+"use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Nav from "@/app/components/Nav";
 import Link from "next/link";
 
 export default function ProfilePage() {
+  const { user, loading } = useCurrentUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
+
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body overflow-x-hidden">
       <Nav />
