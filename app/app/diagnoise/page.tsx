@@ -7,12 +7,18 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 export default function DiagnosePage() {
   const { user, loading } = useCurrentUser();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [result, setResult] = useState<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const startCamera = async () => {
     setCapturedImage(null);
+    setSelectedFile(null);
+    setResult(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -41,7 +47,7 @@ export default function DiagnosePage() {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, []);
+  }, [loading, user]);
 
   const closeCamera = () => {
     if (streamRef.current) {
@@ -70,8 +76,86 @@ export default function DiagnosePage() {
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      const dataUrl = URL.createObjectURL(file);
+      setCapturedImage(dataUrl);
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    }
+  };
+
+  const runDiagnostic = async () => {
+    if (!user || (!capturedImage && !selectedFile)) return;
+    setIsAnalyzing(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      
+      // 1. Prepare File
+      let fileToUpload: Blob;
+      if (selectedFile) {
+        fileToUpload = selectedFile;
+      } else {
+        const res = await fetch(capturedImage!);
+        fileToUpload = await res.blob();
+      }
+
+      // 2. Upload
+      const formData = new FormData();
+      formData.append("uid", user.uid);
+      formData.append("file", fileToUpload, "crop_image.jpg");
+
+      const uploadRes = await fetch(`${apiUrl}/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const uploadData = await uploadRes.json();
+      const objectName = uploadData.object_name;
+
+      // 3. Predict
+      const predictRes = await fetch(`${apiUrl}/predict`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          object_names: [objectName], // Wait, predict schema
+          uid: user.uid,
+          object_name: objectName
+        }),
+      });
+
+      if (!predictRes.ok) {
+        throw new Error("Prediction failed");
+      }
+
+      const predictData = await predictRes.json();
+      setResult(predictData);
+    } catch (err) {
+      console.error(err);
+      alert("Diagnostic failed. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <div className="bg-surface text-on-surface min-h-screen font-body relative">
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        hidden
+        onChange={handleFileUpload}
+      />
       {!capturedImage ? (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center h-screen w-screen overflow-hidden">
           <video
@@ -81,7 +165,14 @@ export default function DiagnosePage() {
             controls={false}
             className="w-full h-full object-cover"
           />
-          <div className="absolute top-6 right-6 z-10">
+          <div className="absolute top-6 right-6 z-10 flex gap-4">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-black/50 text-white w-12 h-12 rounded-full flex justify-center items-center hover:bg-black/80 backdrop-blur-md transition"
+              title="Upload Crop"
+            >
+              <span className="material-symbols-outlined">upload</span>
+            </button>
             <button
               onClick={closeCamera}
               className="bg-black/50 text-white w-12 h-12 rounded-full flex justify-center items-center hover:bg-black/80 backdrop-blur-md transition"
@@ -106,8 +197,15 @@ export default function DiagnosePage() {
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-[100] bg-surface flex flex-col items-center justify-center p-6 sm:p-12">
-          <div className="absolute top-6 right-6">
+        <div className="fixed inset-0 z-[100] bg-surface flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto">
+          <div className="absolute top-6 right-6 flex gap-4">
+             <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-surface-container-high text-on-surface w-12 h-12 rounded-full flex justify-center items-center hover:bg-surface-container-highest transition"
+              title="Upload Different Crop"
+            >
+              <span className="material-symbols-outlined">upload</span>
+            </button>
             <button
               onClick={closeCamera}
               className="bg-surface-container-high text-on-surface w-12 h-12 rounded-full flex justify-center items-center hover:bg-surface-container-highest transition"
@@ -115,8 +213,8 @@ export default function DiagnosePage() {
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
-          <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0">
-            Analyzing Crop...
+          <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0 mt-16 sm:mt-0">
+            {result ? "Diagnostic Complete" : "Analyzing Crop..."}
           </h2>
           <div className="relative w-full max-w-sm h-auto max-h-[50vh] aspect-[3/4] mb-8 shrink mx-auto rounded-[2rem] shadow-2xl border-4 border-primary/20 overflow-hidden">
             <img
@@ -124,8 +222,25 @@ export default function DiagnosePage() {
               alt="Captured crop"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none"></div>
+            {isAnalyzing && (
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none"></div>
+            )}
           </div>
+          
+          {result && (
+            <div className="w-full max-w-sm bg-surface-container rounded-2xl p-4 mb-8 shadow-md">
+              <h3 className="font-bold text-xl mb-4 font-headline">Predictions</h3>
+              {result.top_predictions?.map((pred: any, i: number) => (
+                <div key={i} className="flex justify-between items-center mb-2">
+                  <span className="capitalize">{pred.label.replace(/_/g, ' ')}</span>
+                  <span className="font-mono bg-primary/10 text-primary px-2 py-1 rounded-md">
+                    {(pred.confidence * 100).toFixed(1)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <style
             dangerouslySetInnerHTML={{
               __html: `
@@ -139,16 +254,25 @@ export default function DiagnosePage() {
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
             <button
               onClick={startCamera}
-              className="flex-1 py-4 rounded-full font-bold bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition active:scale-[0.98]"
+              disabled={isAnalyzing}
+              className="flex-1 py-4 rounded-full font-bold bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition active:scale-[0.98] disabled:opacity-50"
             >
               Retake Photo
             </button>
-            <button className="flex-1 py-4 rounded-full font-bold signature-gradient text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2">
-              <span>Run Diagnostic</span>
-              <span className="material-symbols-outlined text-xl">
-                psychology
-              </span>
-            </button>
+            {!result && (
+              <button 
+                onClick={runDiagnostic}
+                disabled={isAnalyzing}
+                className="flex-1 py-4 rounded-full font-bold signature-gradient text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <span>{isAnalyzing ? "Processing..." : "Run Diagnostic"}</span>
+                {!isAnalyzing && (
+                  <span className="material-symbols-outlined text-xl">
+                    psychology
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
       )}
