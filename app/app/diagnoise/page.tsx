@@ -14,9 +14,23 @@ export default function DiagnosePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMounted = useRef(true);
+  const isCameraActive = useRef(false);
   const router = useRouter();
 
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
   const startCamera = async () => {
+    isCameraActive.current = true;
     setCapturedImage(null);
     setSelectedFile(null);
     setResult(null);
@@ -24,6 +38,19 @@ export default function DiagnosePage() {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
+      
+      // If a previous stream got orphaned by StrictMode double-mounting, kill it now.
+      if (streamRef.current) {
+         streamRef.current.getTracks().forEach(t => t.stop());
+      }
+      
+      // If the component unmounted, OR the user already snapped a photo/uploaded a file 
+      // while we were waiting for permissions, we must aggressively stop the newly spawned stream.
+      if (!isMounted.current || !isCameraActive.current) {
+         stream.getTracks().forEach(track => track.stop());
+         return;
+      }
+      
       streamRef.current = stream;
       setTimeout(() => {
         if (videoRef.current) {
@@ -33,7 +60,7 @@ export default function DiagnosePage() {
     } catch (err) {
       console.error("Error accessing camera:", err);
       alert("Could not access camera. Please check permissions.");
-      router.push("/app");
+      if (isMounted.current) router.push("/app");
     }
   };
 
@@ -43,14 +70,11 @@ export default function DiagnosePage() {
       return;
     }
     startCamera();
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
-    };
+    // The main cleanup is already handled by the first useEffect hook mapping to isMounted
   }, [loading, user]);
 
   const closeCamera = () => {
+    isCameraActive.current = false;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -68,6 +92,7 @@ export default function DiagnosePage() {
         ctx.drawImage(videoRef.current, 0, 0);
         const dataUrl = canvas.toDataURL("image/jpeg");
         setCapturedImage(dataUrl);
+        isCameraActive.current = false;
 
         if (streamRef.current) {
           streamRef.current.getTracks().forEach((track) => track.stop());
@@ -83,6 +108,7 @@ export default function DiagnosePage() {
       setSelectedFile(file);
       const dataUrl = URL.createObjectURL(file);
       setCapturedImage(dataUrl);
+      isCameraActive.current = false;
 
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
