@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const RecentActivity = () => {
   return (
     <section>
@@ -5,9 +7,12 @@ const RecentActivity = () => {
         <h2 className="text-xl font-bold tracking-tight font-headline">
           Recent Activity
         </h2>
-        <button className="text-sm font-bold text-primary hover:underline">
+        <Link
+          href={"app/activities"}
+          className="text-sm font-bold text-primary hover:underline"
+        >
           View All
-        </button>
+        </Link>
       </div>
       <div className="space-y-4">
         {/* Activity Item 1 */}

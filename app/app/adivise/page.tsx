@@ -47,7 +47,7 @@ export default function AdvisoryPage() {
 
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [recommendations, setRecommendations] = useState<CropRecommendation[]>(
-    []
+    [],
   );
   const [aiAdvice, setAiAdvice] = useState<string[]>([]);
 
@@ -116,7 +116,11 @@ export default function AdvisoryPage() {
 
       setAlerts(newAlerts);
       setRecommendations(mockCrops);
-      setAiAdvice(newAdvice.length ? newAdvice : ["Continue routine monitoring. Environment stable."]);
+      setAiAdvice(
+        newAdvice.length
+          ? newAdvice
+          : ["Continue routine monitoring. Environment stable."],
+      );
     };
 
     if (!weatherData.loading) {
@@ -129,7 +133,7 @@ export default function AdvisoryPage() {
       try {
         const apiKey = process.env.NEXT_PUBLIC_WEATHER_API;
         const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`,
         );
         const data = await response.json();
 
@@ -156,7 +160,7 @@ export default function AdvisoryPage() {
         (error) => {
           console.error("Geolocation error:", error);
           setWeatherData((prev) => ({ ...prev, loading: false }));
-        }
+        },
       );
     } else {
       setWeatherData((prev) => ({ ...prev, loading: false }));
@@ -168,9 +172,9 @@ export default function AdvisoryPage() {
       <Nav />
 
       {/* Main Content Canvas */}
-      <main className="pt-24 px-6 max-w-2xl mx-auto">
+      <main className="pt-24 px-6 max-w-4xl mx-auto">
         {/* Header: Location */}
-        <header className="mb-8 flex items-end justify-between">
+        <header className="mb-6  flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant/60 block mb-1">
               Your Region
@@ -181,215 +185,75 @@ export default function AdvisoryPage() {
               </h1>
             </div>
           </div>
-        </header>
 
-        {/* Weather Summary Strip */}
-        <section className="bg-surface-container-low rounded-lg p-5 mb-8 shadow-sm overflow-x-auto no-scrollbar">
-          <div className="flex justify-between items-center min-w-[400px]">
-            <div className="flex flex-col items-center gap-1">
-              <span className="material-symbols-outlined text-primary mb-1">
-                thermostat
-              </span>
-              <span className="font-bold text-lg">
-                {weatherData.loading ? "--" : `${weatherData.temp}°C`}
-              </span>
-              <span className="text-[10px] uppercase font-bold text-on-surface-variant/60">
-                Temp
-              </span>
+          {/* Weather Summary Strip */}
+          <section className="bg-surface-container-low rounded-full px-5 py-2 shadow-sm border border-outline-variant/30 inline-flex self-start md:self-auto ">
+            <div className="flex items-center justify-between gap-5">
+              <div className="flex items-center gap-2" title="Temperature">
+                <span className="material-symbols-outlined text-primary text-xl">
+                  thermostat
+                </span>
+                <span className="font-bold text-sm text-on-surface">
+                  {weatherData.loading ? "--" : `${weatherData.temp}°C`}
+                </span>
+              </div>
+              <div className="h-4 w-[1px] bg-outline-variant/40"></div>
+              <div className="flex items-center gap-2" title="Humidity">
+                <span className="material-symbols-outlined text-primary text-xl">
+                  humidity_mid
+                </span>
+                <span className="font-bold text-sm text-on-surface">
+                  {weatherData.loading ? "--" : `${weatherData.humidity}%`}
+                </span>
+              </div>
+              <div className="h-4 w-[1px] bg-outline-variant/40"></div>
+              <div className="flex items-center gap-2" title="Cloud Cover">
+                <span className="material-symbols-outlined text-primary text-xl">
+                  cloud
+                </span>
+                <span className="font-bold text-sm text-on-surface">
+                  {weatherData.loading ? "--" : `${weatherData.clouds}%`}
+                </span>
+              </div>
+              <div className="h-4 w-[1px] bg-outline-variant/40"></div>
+              <div className="flex items-center gap-2" title="Wind Speed">
+                <span className="material-symbols-outlined text-primary text-xl">
+                  air
+                </span>
+                <span className="font-bold text-sm text-on-surface">
+                  {weatherData.loading ? "--" : `${weatherData.windSpeed}m/s`}
+                </span>
+              </div>
             </div>
-            <div className="h-8 w-[1px] bg-outline-variant/30"></div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="material-symbols-outlined text-primary mb-1">
-                rainy
-              </span>
-              <span className="font-bold text-lg">
-                {weatherData.loading ? "--" : `${weatherData.rain}%`}
-              </span>
-              <span className="text-[10px] uppercase font-bold text-on-surface-variant/60">
-                Rain
-              </span>
-            </div>
-            <div className="h-8 w-[1px] bg-outline-variant/30"></div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="material-symbols-outlined text-primary mb-1">
-                humidity_mid
-              </span>
-              <span className="font-bold text-lg">
-                {weatherData.loading ? "--" : `${weatherData.humidity}%`}
-              </span>
-              <span className="text-[10px] uppercase font-bold text-on-surface-variant/60">
-                Humidity
-              </span>
-            </div>
-            <div className="h-8 w-[1px] bg-outline-variant/30"></div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="material-symbols-outlined text-primary mb-1">
-                cloud
-              </span>
-              <span className="font-bold text-lg">
-                {weatherData.loading ? "--" : `${weatherData.clouds}%`}
-              </span>
-              <span className="text-[10px] uppercase font-bold text-on-surface-variant/60">
-                Clouds
-              </span>
-            </div>
-            <div className="h-8 w-[1px] bg-outline-variant/30"></div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="material-symbols-outlined text-primary mb-1">
-                air
-              </span>
-              <span className="font-bold text-lg">
-                {weatherData.loading ? "--" : `${weatherData.windSpeed}m/s`}
-              </span>
-              <span className="text-[10px] uppercase font-bold text-on-surface-variant/60">
-                Wind
-              </span>
-            </div>
-          </div>
-        </section>
+          </section>
+        </header>
 
         {/* Alerts Section (Optional based on data) */}
         {alerts.length > 0 && (
-          <section className="mb-8 space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant/60 px-1 mb-2">
-              Critical Alerts
-            </h2>
+          <section className="mb-8 flex flex-wrap gap-3">
             {alerts.map((alert) => (
               <div
                 key={alert.id}
-                className={`flex items-center gap-4 p-4 rounded-lg border-l-4 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm border ${
                   alert.severity === "High"
-                    ? "bg-error-container/20 border-error"
-                    : "bg-warning-container/20 border-warning"
-                }`}
+                    ? "bg-error-container/20 border-error/50"
+                    : "bg-outline-variant/10 border-outline-variant/50"
+                } inline-flex`}
               >
                 <span
-                  className={`material-symbols-outlined ${
-                    alert.severity === "High" ? "text-error" : "text-warning"
+                  className={`material-symbols-outlined text-lg ${
+                    alert.severity === "High" ? "text-error" : "text-primary"
                   }`}
                 >
-                  {alert.type === "Weather" ? "error" : "fmd_bad"}
+                  {alert.type === "Weather" ? "thermostat" : "fmd_bad"}
                 </span>
-                <p className="text-sm font-bold text-on-surface">
+                <p className="text-xs md:text-sm font-bold text-on-surface">
                   {alert.message}
                 </p>
               </div>
             ))}
           </section>
         )}
-
-        {/* Filter Bar */}
-        <section className="mb-8 flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-          <button className="flex items-center gap-2 bg-surface-container-highest px-5 py-3 rounded-full hover:bg-primary-container/20 transition-colors">
-            <span className="material-symbols-outlined text-primary text-xl">
-              opacity
-            </span>
-            <span className="text-sm font-semibold whitespace-nowrap">
-              Water Needs
-            </span>
-          </button>
-          <button className="flex items-center gap-2 bg-surface-container-highest px-5 py-3 rounded-full hover:bg-primary-container/20 transition-colors">
-            <span className="material-symbols-outlined text-primary text-xl">
-              partly_cloudy_day
-            </span>
-            <span className="text-sm font-semibold whitespace-nowrap">
-              Season
-            </span>
-          </button>
-          <button className="flex items-center gap-2 bg-surface-container-highest px-5 py-3 rounded-full hover:bg-primary-container/20 transition-colors">
-            <span className="material-symbols-outlined text-primary text-xl">
-              potted_plant
-            </span>
-            <span className="text-sm font-semibold whitespace-nowrap">
-              Crop Type
-            </span>
-          </button>
-        </section>
-
-        {/* Main Area: Ranked Crop Cards */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-end mb-4 px-1">
-            <h2 className="text-xl font-bold font-headline">
-              Your Crop Advisory
-            </h2>
-            <span className="text-xs font-bold text-primary">Live Insights</span>
-          </div>
-
-          {!weatherData.loading ? (
-            recommendations.map((crop) => (
-              <div
-                key={crop.id}
-                className="bg-surface-container-lowest rounded-lg p-4 flex gap-4 items-center shadow-[0_10px_40px_rgba(24,29,25,0.04)] active:scale-[0.98] transition-transform"
-              >
-                <div className="relative w-20 h-20 shrink-0 overflow-hidden rounded-lg">
-                  <img
-                    className="w-full h-full object-cover"
-                    alt={crop.name}
-                    src={crop.image}
-                  />
-                  <div className="absolute top-1 left-1 bg-primary text-white text-[8px] font-bold px-2 py-0.5 rounded-full">
-                    {crop.status}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-extrabold text-lg truncate font-headline">
-                      {crop.name}
-                    </h3>
-                    <div className="bg-secondary-container px-2 py-0.5 rounded-full">
-                      <span className="text-[10px] font-black text-on-secondary-container">
-                        {crop.matchScore}% MATCH
-                      </span>
-                    </div>
-                  </div>
-                   <p className="text-on-surface-variant text-xs leading-relaxed line-clamp-2">
-                    {crop.advice}
-                  </p>
-                </div>
-                <span className="material-symbols-outlined text-outline">
-                  chevron_right
-                </span>
-              </div>
-            ))
-          ) : (
-             <div className="p-8 text-center text-on-surface-variant/40 italic">
-               Calculating personalized recommendations...
-             </div>
-          )}
-        </section>
-
-        {/* CTA / Advisory Insight */}
-        <section className="mt-10 p-6 bg-gradient-to-br from-[#486808] to-[#85a947] rounded-lg text-white shadow-xl">
-          <div className="flex items-start gap-4">
-            <span
-              className="material-symbols-outlined text-3xl opacity-80"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              psychology
-            </span>
-            <div className="flex-1">
-              <h4 className="font-bold text-lg mb-2 font-headline">
-                AI Advisory Insight
-              </h4>
-              <ul className="space-y-2">
-                {aiAdvice.map((advice, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-white/90">
-                    <span className="mt-1.5 w-1 h-1 rounded-full bg-white shrink-0"></span>
-                    {advice}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-4 pt-4 border-t border-white/20 flex justify-between items-center">
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">
-                  Confidence: 89%
-                </span>
-                <button className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30 transition-colors">
-                  Full Analysis
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Bottom Navigation Bar */}
