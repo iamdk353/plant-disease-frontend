@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Nav from "@/app/components/Nav";
@@ -9,11 +9,54 @@ export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
 
+  const [location, setLocation] = useState<string>("Locating...");
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const fetchLocation = async (lat: number, lon: number) => {
+      try {
+        const apiKey = process.env.NEXT_PUBLIC_WEATHER_API;
+        if (!apiKey) {
+          setLocation("Unknown Location");
+          return;
+        }
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`
+        );
+        const data = await response.json();
+
+        if (data.name && data.sys?.country) {
+          setLocation(`${data.name}, ${data.sys.country}`);
+        } else if (data.name) {
+          setLocation(data.name);
+        } else {
+          setLocation("Unknown Location");
+        }
+      } catch (error) {
+        console.error("Error fetching location:", error);
+        setLocation("Unknown Location");
+      }
+    };
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchLocation(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLocation("Location Access Denied");
+        }
+      );
+    } else {
+      setLocation("Location Unavailable");
+    }
+  }, []);
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body overflow-x-hidden">
@@ -34,24 +77,24 @@ export default function ProfilePage() {
               <img
                 alt="Farmer's profile picture"
                 className="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBfDGKi_Kn77VTyx7Gqqx7L4GUJ3NjdEvxL5NNMar8cRe1IEsoU_B44GY3sxEwET8k482E0CSXUer2J8Fkzy4hUcG4lJvSsQCPUgVETjCwuJIskjao5DskYmpC4IqxgC3c_-GbhyGH-NEP88DWUPiXCNnOrO9Bgy9tAYcpSqvELxlzraBiuoNRygzpm3-13Z8S8cQ8MtHXLaf_cbUktgNtO7YzUq2UamXqtZF8IapWa03wsvjxy-CR9NZdwMof4AqWQx7WD9N1R3r4"
+                src={user?.photoURL || "https://lh3.googleusercontent.com/aida-public/AB6AXuCBfDGKi_Kn77VTyx7Gqqx7L4GUJ3NjdEvxL5NNMar8cRe1IEsoU_B44GY3sxEwET8k482E0CSXUer2J8Fkzy4hUcG4lJvSsQCPUgVETjCwuJIskjao5DskYmpC4IqxgC3c_-GbhyGH-NEP88DWUPiXCNnOrO9Bgy9tAYcpSqvELxlzraBiuoNRygzpm3-13Z8S8cQ8MtHXLaf_cbUktgNtO7YzUq2UamXqtZF8IapWa03wsvjxy-CR9NZdwMof4AqWQx7WD9N1R3r4"}
               />
             </div>
             <div className="flex-1 pb-4">
               <div className="flex flex-wrap items-center gap-3 mb-1">
                 <h1 className="text-4xl font-extrabold font-headline tracking-tight text-on-surface">
-                  Samuel Okoro
+                  {user?.displayName || "Farmer"}
                 </h1>
                 <span className="bg-secondary-container text-on-secondary-container px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
                   Master Farmer
                 </span>
               </div>
               <div className="flex items-center gap-4 text-on-surface-variant font-medium">
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 transition-all">
                   <span className="material-symbols-outlined text-lg">
                     location_on
                   </span>{" "}
-                  Kano, Nigeria
+                  {location}
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-lg">
@@ -208,9 +251,9 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                  Secondary Contact
+                  Registered Email
                 </p>
-                <p className="font-headline font-bold">samuel.o@agri.ng</p>
+                <p className="font-headline font-bold">{user?.email || "No email linked"}</p>
               </div>
             </div>
             <div className="bg-primary p-6 rounded-xl shadow-lg flex items-center justify-center gap-3 text-white cursor-pointer hover:bg-primary/90 transition-colors">

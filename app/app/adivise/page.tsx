@@ -67,14 +67,18 @@ export default function AdvisoryPage() {
   const [selectedStory, setSelectedStory] = useState<any>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
+    null,
+  );
+  const [isFetchingReport, setIsFetchingReport] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`,
         );
         if (!response.ok) throw new Error("Failed to fetch activities");
         const data = await response.json();
@@ -82,9 +86,10 @@ export default function AdvisoryPage() {
           data
             .sort(
               (a: Activity, b: Activity) =>
-                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime(),
             )
-            .slice(0, 5) // Display only top 5 recent activities in the side bar
+            .slice(0, 5), // Display only top 5 recent activities in the side bar
         );
       } catch (err) {
         console.error(err);
@@ -94,6 +99,38 @@ export default function AdvisoryPage() {
     };
     fetchActivities();
   }, [user]);
+
+  useEffect(() => {
+    const fetchReport = async () => {
+      if (!selectedActivity) {
+        setSelectedReport(null);
+        return;
+      }
+      setIsFetchingReport(true);
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/ai/report`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prediction_id: selectedActivity.id,
+              location: null,
+            }),
+          },
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setSelectedReport(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch report:", err);
+      } finally {
+        setIsFetchingReport(false);
+      }
+    };
+    fetchReport();
+  }, [selectedActivity]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -307,7 +344,10 @@ export default function AdvisoryPage() {
               <h2 className="text-xl font-bold font-headline text-on-surface">
                 Recent Activity
               </h2>
-              <Link href="/app/activities" className="text-xs font-bold text-primary hover:underline">
+              <Link
+                href="/app/activities"
+                className="text-xs font-bold text-primary hover:underline"
+              >
                 View All
               </Link>
             </div>
@@ -319,7 +359,9 @@ export default function AdvisoryPage() {
               ) : activities.length > 0 ? (
                 activities.map((activity) => {
                   const topResult = activity.results[0];
-                  const isHealthy = topResult.label.toLowerCase().includes("healthy");
+                  const isHealthy = topResult.label
+                    .toLowerCase()
+                    .includes("healthy");
 
                   return (
                     <div
@@ -345,11 +387,16 @@ export default function AdvisoryPage() {
                             <span className="w-2 h-2 rounded-full bg-warning"></span>
                           )}
                           <p className="text-[10px] uppercase font-bold text-on-surface-variant/60 truncate tracking-wider">
-                            {new Date(activity.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}
+                            {new Date(activity.created_at).toLocaleDateString(
+                              undefined,
+                              { month: "short", day: "numeric" },
+                            )}
                           </p>
                         </div>
                         <h3 className="font-bold text-sm text-on-surface leading-tight truncate font-headline pb-0.5">
-                          {topResult.label.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                          {topResult.label
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
                         </h3>
                       </div>
                     </div>
@@ -465,14 +512,16 @@ export default function AdvisoryPage() {
             className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
             onClick={() => setSelectedActivity(null)}
           >
-             <div
+            <div
               className="bg-surface rounded-[2rem] w-[90%] md:w-[80%] h-[80%] overflow-hidden relative shadow-2xl cursor-auto animate-in fade-in zoom-in-95 duration-200 flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b border-outline-variant/20">
                 <h2 className="text-2xl font-bold font-headline text-on-surface truncate pr-4">
-                  {selectedActivity.results[0].label.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                  {selectedActivity.results[0].label
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}
                 </h2>
                 <button
                   className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-surface-variant text-on-surface-variant hover:bg-surface-variant/80 transition-colors"
@@ -481,30 +530,148 @@ export default function AdvisoryPage() {
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
-              
+
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col items-center">
-                 <div className="w-full max-w-lg aspect-square rounded-2xl overflow-hidden mb-8 shadow-lg ring-1 ring-outline-variant/20">
-                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${selectedActivity.image_name}`}
-                    alt="Activity Image"
-                    className="w-full h-full object-cover"
-                   />
-                 </div>
-                 
-                 <div className="w-full max-w-lg space-y-4 pb-10">
-                   <h3 className="text-xl font-bold font-headline">Diagnosis Details</h3>
-                   <div className="space-y-3">
-                     {selectedActivity.results.map((result, idx) => (
-                       <div key={idx} className="flex items-center justify-between bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
-                         <span className="font-bold text-sm text-on-surface capitalize">{result.label.replace(/_/g, " ")}</span>
-                         <span className="text-xs font-black px-3 py-1 bg-primary text-on-primary rounded-full">
-                           {(result.confidence * 100).toFixed(1)}%
-                         </span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
+                <div className="w-full max-w-lg space-y-4 pb-10">
+                  {/* AI REPORT LOADING STATE */}
+                  {isFetchingReport && (
+                    <div className="mt-8 pt-6 border-t border-outline-variant/30 flex flex-col gap-4">
+                      <div className="flex items-center gap-2 text-primary font-bold animate-pulse">
+                        <span className="material-symbols-outlined animate-spin text-xl">
+                          psychology
+                        </span>
+                        Loading AI Analysis...
+                      </div>
+                      <div className="h-4 w-full bg-surface-variant/50 animate-pulse rounded-full"></div>
+                      <div className="h-4 w-[80%] bg-surface-variant/50 animate-pulse rounded-full"></div>
+                      <div className="h-24 w-full bg-surface-variant/50 animate-pulse rounded-xl mt-2"></div>
+                    </div>
+                  )}
+
+                  {/* AI REPORT FULL RENDER */}
+                  {!isFetchingReport &&
+                    selectedReport &&
+                    selectedReport.report && (
+                      <>
+                        <div className="w-full max-w-lg aspect-square rounded-2xl overflow-hidden mb-8 shadow-lg ring-1 ring-outline-variant/20">
+                          <img
+                            src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${selectedActivity.image_name}`}
+                            alt="Activity Image"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="mt-8 pt-6 border-t border-outline-variant/30">
+                          <h3 className="font-bold text-xl mb-3 font-headline text-primary flex items-center gap-2">
+                            <span className="material-symbols-outlined">
+                              verified
+                            </span>
+                            AI Expert Analysis
+                          </h3>
+                          <p className="text-sm text-on-surface-variant mb-5 leading-relaxed">
+                            {selectedReport.report.report_text}
+                          </p>
+
+                          {selectedReport.expert_analysis && (
+                            <div className="bg-primary/5 p-4 rounded-xl text-sm mb-5 border border-primary/10">
+                              <p className="flex items-start gap-2">
+                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
+                                  find_in_page
+                                </span>
+                                <span>
+                                  <strong>Cause:</strong>{" "}
+                                  {selectedReport.expert_analysis.cause}
+                                </span>
+                              </p>
+                              <p className="mt-3 flex items-start gap-2">
+                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
+                                  thermostat
+                                </span>
+                                <span>
+                                  <strong>Weather Impact:</strong>{" "}
+                                  {
+                                    selectedReport.expert_analysis
+                                      .weather_impact
+                                  }
+                                </span>
+                              </p>
+                            </div>
+                          )}
+
+                          {selectedReport.report.treatments &&
+                            selectedReport.report.treatments.length > 0 && (
+                              <div className="mb-5">
+                                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
+                                  <span className="material-symbols-outlined text-base">
+                                    medication
+                                  </span>
+                                  Step-by-Step Treatment
+                                </h4>
+                                <div className="space-y-3">
+                                  {selectedReport.report.treatments.map(
+                                    (treatment: any, i: number) => (
+                                      <div
+                                        key={i}
+                                        className="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30"
+                                      >
+                                        <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold shrink-0">
+                                          {i + 1}
+                                        </div>
+                                        <div className="text-sm">
+                                          <p className="text-on-surface">
+                                            {treatment.step}
+                                          </p>
+                                          {treatment.dosage && (
+                                            <p className="text-xs text-primary font-bold mt-1 uppercase tracking-wider">
+                                              {treatment.dosage}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                          {selectedReport.product_links &&
+                            selectedReport.product_links.length > 0 && (
+                              <div>
+                                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
+                                  <span className="material-symbols-outlined text-base">
+                                    shopping_cart
+                                  </span>
+                                  Recommended Products
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {selectedReport.product_links.map(
+                                    (link: string, i: number) => {
+                                      const domain = new URL(
+                                        link,
+                                      ).hostname.replace("www.", "");
+                                      return (
+                                        <a
+                                          key={i}
+                                          href={link}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="bg-surface-variant hover:bg-primary hover:text-on-primary text-on-surface text-xs font-bold px-3 py-2 rounded-full transition-colors flex items-center gap-1"
+                                        >
+                                          {domain}{" "}
+                                          <span className="material-symbols-outlined text-[10px]">
+                                            open_in_new
+                                          </span>
+                                        </a>
+                                      );
+                                    },
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </>
+                    )}
+                </div>
               </div>
             </div>
           </div>
