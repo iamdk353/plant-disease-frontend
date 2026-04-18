@@ -31,6 +31,20 @@ interface Alert {
   severity: "High" | "Medium";
 }
 
+interface PredictionResult {
+  rank: number;
+  label: string;
+  confidence: number;
+}
+
+interface Activity {
+  id: string;
+  image_name: string;
+  inference_ms: number;
+  created_at: string;
+  results: PredictionResult[];
+}
+
 export default function AdvisoryPage() {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
@@ -50,6 +64,36 @@ export default function AdvisoryPage() {
     [],
   );
   const [aiAdvice, setAiAdvice] = useState<string[]>([]);
+  const [selectedStory, setSelectedStory] = useState<any>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch activities");
+        const data = await response.json();
+        setActivities(
+          data
+            .sort(
+              (a: Activity, b: Activity) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+            .slice(0, 5) // Display only top 5 recent activities in the side bar
+        );
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setActivitiesLoading(false);
+      }
+    };
+    fetchActivities();
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -255,6 +299,217 @@ export default function AdvisoryPage() {
           </section>
         )}
       </main>
+      <section className="px-6 max-w-6xl mx-auto pb-24 mt-10">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Left Column: 30% - List of Items */}
+          <div className="w-full md:w-[30%] shrink-0">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold font-headline text-on-surface">
+                Recent Activity
+              </h2>
+              <Link href="/app/activities" className="text-xs font-bold text-primary hover:underline">
+                View All
+              </Link>
+            </div>
+            <div className="flex flex-col gap-3">
+              {activitiesLoading ? (
+                <div className="p-4 text-center text-on-surface-variant/50 text-sm italic">
+                  Loading activities...
+                </div>
+              ) : activities.length > 0 ? (
+                activities.map((activity) => {
+                  const topResult = activity.results[0];
+                  const isHealthy = topResult.label.toLowerCase().includes("healthy");
+
+                  return (
+                    <div
+                      key={activity.id}
+                      onClick={() => setSelectedActivity(activity)}
+                      className="p-3 bg-surface-container-low rounded-xl shadow-sm border border-outline-variant/30 flex items-center gap-3 cursor-pointer hover:bg-surface-container transition-colors group"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-surface-variant overflow-hidden flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <img
+                          src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${activity.image_name}`}
+                          alt={topResult.label}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          {isHealthy ? (
+                            <span className="w-2 h-2 rounded-full bg-secondary"></span>
+                          ) : topResult.confidence > 0.6 ? (
+                            <span className="w-2 h-2 rounded-full bg-error"></span>
+                          ) : (
+                            <span className="w-2 h-2 rounded-full bg-warning"></span>
+                          )}
+                          <p className="text-[10px] uppercase font-bold text-on-surface-variant/60 truncate tracking-wider">
+                            {new Date(activity.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}
+                          </p>
+                        </div>
+                        <h3 className="font-bold text-sm text-on-surface leading-tight truncate font-headline pb-0.5">
+                          {topResult.label.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                        </h3>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-4 text-center text-on-surface-variant/50 text-sm">
+                  No recent activity found.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column: 70% - Story Interface Grid */}
+          <div className="w-full md:w-[70%]">
+            <h2 className="text-xl font-bold font-headline mb-4 text-on-surface">
+              Advisory Stories
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((storyId) => (
+                <div
+                  key={storyId}
+                  onClick={() =>
+                    setSelectedStory({
+                      id: storyId,
+                      title: `Advisory Story ${storyId}`,
+                      description:
+                        "Detailed information about this specific advisory story goes here. This provides the user with in-depth knowledge and actionable steps to improve their crop yield and handle unexpected issues in the field.",
+                      image: `https://picsum.photos/400/600?random=${storyId}`,
+                    })
+                  }
+                  className="aspect-[3/4] bg-surface-variant rounded-2xl cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1 transition-all overflow-hidden relative group"
+                >
+                  <img
+                    src={`https://picsum.photos/400/600?random=${storyId}`}
+                    alt={`Story ${storyId}`}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+                  {/* Content */}
+                  <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col gap-1">
+                    <div className="flex gap-1 mb-1">
+                      <span className="w-8 h-1 bg-white/80 rounded-full"></span>
+                      <span className="w-8 h-1 bg-white/30 rounded-full"></span>
+                      <span className="w-8 h-1 bg-white/30 rounded-full"></span>
+                    </div>
+                    <h3 className="text-white font-bold font-headline text-sm leading-tight drop-shadow-md">
+                      Advisory Story {storyId}
+                    </h3>
+                    <p className="text-white/80 text-[10px] font-medium drop-shadow-md">
+                      Tap to view details
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Overlay for Stories */}
+        {selectedStory && (
+          <div
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+            onClick={() => setSelectedStory(null)}
+          >
+            <div
+              className="bg-surface rounded-[2rem] w-full max-w-md overflow-hidden relative shadow-2xl cursor-auto animate-in fade-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors z-20 backdrop-blur-sm"
+                onClick={() => setSelectedStory(null)}
+              >
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+
+              {/* Modal Image */}
+              <div className="h-64 w-full bg-surface-variant relative">
+                <img
+                  src={selectedStory.image}
+                  alt={selectedStory.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-8 pt-2">
+                <h2 className="text-3xl font-extrabold font-headline mb-3 text-on-surface">
+                  {selectedStory.title}
+                </h2>
+                <p className="text-on-surface-variant text-sm leading-relaxed tracking-wide mb-8">
+                  {selectedStory.description}
+                </p>
+                <button
+                  className="w-full bg-primary text-on-primary py-4 rounded-full font-bold shadow-md hover:shadow-lg active:scale-[0.98] transition-all"
+                  onClick={() => setSelectedStory(null)}
+                >
+                  Understood
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Overlay for Recent Activity */}
+        {selectedActivity && (
+          <div
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+            onClick={() => setSelectedActivity(null)}
+          >
+             <div
+              className="bg-surface rounded-[2rem] w-[90%] md:w-[80%] h-[80%] overflow-hidden relative shadow-2xl cursor-auto animate-in fade-in zoom-in-95 duration-200 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-outline-variant/20">
+                <h2 className="text-2xl font-bold font-headline text-on-surface truncate pr-4">
+                  {selectedActivity.results[0].label.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                </h2>
+                <button
+                  className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-surface-variant text-on-surface-variant hover:bg-surface-variant/80 transition-colors"
+                  onClick={() => setSelectedActivity(null)}
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col items-center">
+                 <div className="w-full max-w-lg aspect-square rounded-2xl overflow-hidden mb-8 shadow-lg ring-1 ring-outline-variant/20">
+                   <img
+                    src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${selectedActivity.image_name}`}
+                    alt="Activity Image"
+                    className="w-full h-full object-cover"
+                   />
+                 </div>
+                 
+                 <div className="w-full max-w-lg space-y-4 pb-10">
+                   <h3 className="text-xl font-bold font-headline">Diagnosis Details</h3>
+                   <div className="space-y-3">
+                     {selectedActivity.results.map((result, idx) => (
+                       <div key={idx} className="flex items-center justify-between bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
+                         <span className="font-bold text-sm text-on-surface capitalize">{result.label.replace(/_/g, " ")}</span>
+                         <span className="text-xs font-black px-3 py-1 bg-primary text-on-primary rounded-full">
+                           {(result.confidence * 100).toFixed(1)}%
+                         </span>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Bottom Navigation Bar */}
       <nav className="fixed bottom-0 w-full rounded-t-[3rem] z-50 bg-surface/90 backdrop-blur-2xl border-t border-on-surface/5 shadow-[0_-10px_40px_rgba(24,29,25,0.06)] md:hidden">
