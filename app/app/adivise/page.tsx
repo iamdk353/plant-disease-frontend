@@ -43,6 +43,7 @@ interface Activity {
   inference_ms: number;
   created_at: string;
   results: PredictionResult[];
+  report?: any;
 }
 
 export default function AdvisoryPage() {
@@ -67,7 +68,7 @@ export default function AdvisoryPage() {
   const [soilType, setSoilType] = useState("Well-drained red soil");
   const [marketTrends, setMarketTrends] = useState("");
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
-  const [cropPlan, setCropPlan] = useState<any[] | null>(null);
+  const [cropPlan, setCropPlan] = useState<any | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
@@ -456,7 +457,10 @@ export default function AdvisoryPage() {
                   return (
                     <div
                       key={activity.id}
-                      onClick={() => setSelectedActivity(activity)}
+                      onClick={() => {
+                        setSelectedActivity(activity);
+                        setSelectedReport(activity.report || null);
+                      }}
                       className="p-3 bg-surface-container-low rounded-xl shadow-sm border border-outline-variant/30 flex items-center gap-3 cursor-pointer hover:bg-surface-container transition-colors group"
                     >
                       <div className="w-12 h-12 rounded-lg bg-surface-variant overflow-hidden flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -596,7 +600,10 @@ export default function AdvisoryPage() {
         {selectedActivity && (
           <div
             className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
-            onClick={() => { setSelectedActivity(null); setSelectedReport(null); }}
+            onClick={() => {
+              setSelectedActivity(null);
+              setSelectedReport(null);
+            }}
           >
             <div
               className="bg-surface rounded-[2rem] w-[90%] md:w-[80%] h-[80%] overflow-hidden relative shadow-2xl cursor-auto animate-in fade-in zoom-in-95 duration-200 flex flex-col"
@@ -611,7 +618,10 @@ export default function AdvisoryPage() {
                 </h2>
                 <button
                   className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-surface-variant text-on-surface-variant hover:bg-surface-variant/80 transition-colors"
-                  onClick={() => { setSelectedActivity(null); setSelectedReport(null); }}
+                  onClick={() => {
+                    setSelectedActivity(null);
+                    setSelectedReport(null);
+                  }}
                 >
                   <span className="material-symbols-outlined">close</span>
                 </button>
@@ -620,7 +630,6 @@ export default function AdvisoryPage() {
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col items-center">
                 <div className="w-full max-w-lg space-y-4 pb-10">
-
                   {/* Image */}
                   <div className="w-full max-w-lg aspect-square rounded-2xl overflow-hidden shadow-lg ring-1 ring-outline-variant/20">
                     <img
@@ -632,11 +641,18 @@ export default function AdvisoryPage() {
 
                   {/* Raw Predictions */}
                   <div className="bg-surface-container-low rounded-2xl p-4 shadow-sm border border-outline-variant/30">
-                    <h3 className="font-bold text-sm uppercase tracking-wider text-on-surface-variant/70 mb-3">Model Predictions</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-wider text-on-surface-variant/70 mb-3">
+                      Model Predictions
+                    </h3>
                     <div className="space-y-2">
                       {selectedActivity.results.map((r) => (
-                        <div key={r.rank} className="flex justify-between items-center">
-                          <span className="text-sm text-on-surface capitalize">{r.label.replace(/_/g, " ")}</span>
+                        <div
+                          key={r.rank}
+                          className="flex justify-between items-center"
+                        >
+                          <span className="text-sm text-on-surface capitalize">
+                            {r.label.replace(/_/g, " ")}
+                          </span>
                           <span className="text-xs font-mono font-bold bg-primary/10 text-primary px-2 py-1 rounded-md">
                             {(r.confidence * 100).toFixed(1)}%
                           </span>
@@ -650,7 +666,9 @@ export default function AdvisoryPage() {
                       onClick={() => generateReport(selectedActivity)}
                       className="w-full py-4 rounded-2xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-xl">psychology</span>
+                      <span className="material-symbols-outlined text-xl">
+                        psychology
+                      </span>
                       Generate AI Expert Report
                     </button>
                   )}
@@ -671,103 +689,120 @@ export default function AdvisoryPage() {
                   )}
 
                   {/* AI REPORT FULL RENDER */}
-                  {!isFetchingReport && selectedReport && selectedReport.report && (
-                    <>
-                      <div className="pt-6 border-t border-outline-variant/30">
-                        <h3 className="font-bold text-xl mb-3 font-headline text-primary flex items-center gap-2">
-                          <span className="material-symbols-outlined">verified</span>
-                          AI Expert Analysis
-                        </h3>
-                        <p className="text-sm text-on-surface-variant mb-5 leading-relaxed">
-                          {selectedReport.report.report_text}
-                        </p>
+                  {!isFetchingReport &&
+                    selectedReport &&
+                    selectedReport.report && (
+                      <>
+                        <div className="pt-6 border-t border-outline-variant/30">
+                          <h3 className="font-bold text-xl mb-3 font-headline text-primary flex items-center gap-2">
+                            <span className="material-symbols-outlined">
+                              verified
+                            </span>
+                            AI Expert Analysis
+                          </h3>
+                          <p className="text-sm text-on-surface-variant mb-5 leading-relaxed">
+                            {selectedReport.report.report_text}
+                          </p>
 
-                        {selectedReport.expert_analysis && (
-                          <div className="bg-primary/5 p-4 rounded-xl text-sm mb-5 border border-primary/10">
-                            <p className="flex items-start gap-2">
-                              <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
-                                find_in_page
-                              </span>
-                              <span>
-                                <strong>Cause:</strong>{" "}
-                                {selectedReport.expert_analysis.cause}
-                              </span>
-                            </p>
-                            <p className="mt-3 flex items-start gap-2">
-                              <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
-                                thermostat
-                              </span>
-                              <span>
-                                <strong>Weather Impact:</strong>{" "}
-                                {selectedReport.expert_analysis.weather_impact}
-                              </span>
-                            </p>
-                          </div>
-                        )}
-
-                        {selectedReport.report.treatments &&
-                          selectedReport.report.treatments.length > 0 && (
-                            <div className="mb-5">
-                              <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
-                                <span className="material-symbols-outlined text-base">medication</span>
-                                Step-by-Step Treatment
-                              </h4>
-                              <div className="space-y-3">
-                                {selectedReport.report.treatments.map(
-                                  (treatment: any, i: number) => (
-                                    <div
-                                      key={i}
-                                      className="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30"
-                                    >
-                                      <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold shrink-0">
-                                        {i + 1}
-                                      </div>
-                                      <div className="text-sm">
-                                        <p className="text-on-surface">{treatment.step}</p>
-                                        {treatment.dosage && (
-                                          <p className="text-xs text-primary font-bold mt-1 uppercase tracking-wider">
-                                            {treatment.dosage}
-                                          </p>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
+                          {selectedReport.expert_analysis && (
+                            <div className="bg-primary/5 p-4 rounded-xl text-sm mb-5 border border-primary/10">
+                              <p className="flex items-start gap-2">
+                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
+                                  find_in_page
+                                </span>
+                                <span>
+                                  <strong>Cause:</strong>{" "}
+                                  {selectedReport.expert_analysis.cause}
+                                </span>
+                              </p>
+                              <p className="mt-3 flex items-start gap-2">
+                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
+                                  thermostat
+                                </span>
+                                <span>
+                                  <strong>Weather Impact:</strong>{" "}
+                                  {
+                                    selectedReport.expert_analysis
+                                      .weather_impact
+                                  }
+                                </span>
+                              </p>
                             </div>
                           )}
 
-                        {selectedReport.product_links &&
-                          selectedReport.product_links.length > 0 && (
-                            <div>
-                              <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
-                                <span className="material-symbols-outlined text-base">shopping_cart</span>
-                                Recommended Products
-                              </h4>
-                              <div className="flex flex-wrap gap-2">
-                                {selectedReport.product_links.map(
-                                  (link: string, i: number) => {
-                                    const domain = new URL(link).hostname.replace("www.", "");
-                                    return (
-                                      <a
+                          {selectedReport.report.treatments &&
+                            selectedReport.report.treatments.length > 0 && (
+                              <div className="mb-5">
+                                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
+                                  <span className="material-symbols-outlined text-base">
+                                    medication
+                                  </span>
+                                  Step-by-Step Treatment
+                                </h4>
+                                <div className="space-y-3">
+                                  {selectedReport.report.treatments.map(
+                                    (treatment: any, i: number) => (
+                                      <div
                                         key={i}
-                                        href={link}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="bg-surface-variant hover:bg-primary hover:text-on-primary text-on-surface text-xs font-bold px-3 py-2 rounded-full transition-colors flex items-center gap-1"
+                                        className="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30"
                                       >
-                                        {domain}{" "}
-                                        <span className="material-symbols-outlined text-[10px]">open_in_new</span>
-                                      </a>
-                                    );
-                                  },
-                                )}
+                                        <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold shrink-0">
+                                          {i + 1}
+                                        </div>
+                                        <div className="text-sm">
+                                          <p className="text-on-surface">
+                                            {treatment.step}
+                                          </p>
+                                          {treatment.dosage && (
+                                            <p className="text-xs text-primary font-bold mt-1 uppercase tracking-wider">
+                                              {treatment.dosage}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                      </div>
-                    </>
-                  )}
+                            )}
+
+                          {selectedReport.product_links &&
+                            selectedReport.product_links.length > 0 && (
+                              <div>
+                                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
+                                  <span className="material-symbols-outlined text-base">
+                                    shopping_cart
+                                  </span>
+                                  Recommended Products
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {selectedReport.product_links.map(
+                                    (link: string, i: number) => {
+                                      const domain = new URL(
+                                        link,
+                                      ).hostname.replace("www.", "");
+                                      return (
+                                        <a
+                                          key={i}
+                                          href={link}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="bg-surface-variant hover:bg-primary hover:text-on-primary text-on-surface text-xs font-bold px-3 py-2 rounded-full transition-colors flex items-center gap-1"
+                                        >
+                                          {domain}{" "}
+                                          <span className="material-symbols-outlined text-[10px]">
+                                            open_in_new
+                                          </span>
+                                        </a>
+                                      );
+                                    },
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </>
+                    )}
                 </div>
               </div>
             </div>
