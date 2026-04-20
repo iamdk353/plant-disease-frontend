@@ -10,9 +10,13 @@ export default function DiagnosePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [predictError, setPredictError] = useState<any | null | undefined>(
+    undefined,
+  );
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const objectUrlRef = useRef<string | null>(null);
   const isMounted = useRef(true);
   const isCameraActive = useRef(false);
   const router = useRouter();
@@ -21,6 +25,15 @@ export default function DiagnosePage() {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
+      // revoke any created object URL to avoid memory leaks
+      if (objectUrlRef.current) {
+        try {
+          URL.revokeObjectURL(objectUrlRef.current);
+        } catch (e) {
+          // ignore
+        }
+        objectUrlRef.current = null;
+      }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
@@ -30,9 +43,17 @@ export default function DiagnosePage() {
 
   const startCamera = async () => {
     isCameraActive.current = true;
+    // revoke any previous object URL (from file upload)
+    if (objectUrlRef.current) {
+      try {
+        URL.revokeObjectURL(objectUrlRef.current);
+      } catch (e) {}
+      objectUrlRef.current = null;
+    }
     setCapturedImage(null);
     setSelectedFile(null);
     setResult(null);
+    setPredictError(undefined);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -90,7 +111,17 @@ export default function DiagnosePage() {
       if (ctx) {
         ctx.drawImage(videoRef.current, 0, 0);
         const dataUrl = canvas.toDataURL("image/jpeg");
+
+        // If there was a previous object URL (from file upload), revoke it — we're using a data URL now
+        if (objectUrlRef.current) {
+          try {
+            URL.revokeObjectURL(objectUrlRef.current);
+          } catch (e) {}
+          objectUrlRef.current = null;
+        }
+
         setCapturedImage(dataUrl);
+        setPredictError(undefined);
         isCameraActive.current = false;
 
         if (streamRef.current) {
@@ -106,7 +137,17 @@ export default function DiagnosePage() {
       const file = e.target.files[0];
       setSelectedFile(file);
       const dataUrl = URL.createObjectURL(file);
+
+      // revoke previous object URL if any
+      if (objectUrlRef.current) {
+        try {
+          URL.revokeObjectURL(objectUrlRef.current);
+        } catch (e) {}
+      }
+      objectUrlRef.current = dataUrl;
+
       setCapturedImage(dataUrl);
+      setPredictError(undefined);
       isCameraActive.current = false;
 
       if (streamRef.current) {
@@ -168,8 +209,8 @@ export default function DiagnosePage() {
           // detail may contain message, score, or non_leaf array for batch
           setPredictError(detail);
         } catch (parseErr) {
-          console.error('Failed to parse 422 response', parseErr);
-          setPredictError({ message: 'Uploaded image is not a leaf/plant.' });
+          console.error("Failed to parse 422 response", parseErr);
+          setPredictError({ message: "Uploaded image is not a leaf/plant." });
         }
         setResult(null);
         return;
@@ -258,36 +299,49 @@ export default function DiagnosePage() {
           <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0 mt-16 sm:mt-0">
             {result ? "Diagnostic Complete" : "Analyzing Crop..."}
           </h2>
-          <div className="relative w-full max-w-sm h-[45vh] aspect-[3/4] mb-8 shrink mx-auto rounded-[2rem] shadow-2xl border-4 border-primary/20 overflow-hidden">
-            <img
-              src={capturedImage || undefined}
-              alt="Captured crop"
-              className="w-full h-full object-cover"
-            />
+          <div className="relative w-full max-w-xl h-[40vh] sm:h-[50vh] mb-8 shrink-0 mx-auto mt-40 rounded-[2rem] shadow-2xl border-4 border-primary/20 overflow-hidden bg-surface-container-high flex items-center justify-center">
+            {capturedImage ? (
+              <img
+                src={capturedImage}
+                alt="Captured crop"
+                className="w-full h-full object-cover block"
+                style={{ objectPosition: "center" }}
+              />
+            ) : (
+              <span className="material-symbols-outlined text-5xl text-on-surface-variant/40">
+                image
+              </span>
+            )}
             {isAnalyzing && (
-              <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none" />
             )}
           </div>
 
-          {predictError && (
+          {typeof predictError !== "undefined" && predictError && (
             <div className="w-full max-w-sm bg-error-container text-on-error-container rounded-2xl p-4 mb-4 shadow-md">
               <h4 className="font-bold mb-2">Not a leaf image</h4>
               <p className="text-sm">
-                {predictError.message || "Uploaded image is not a clear leaf photo."}
+                {predictError.message ||
+                  "Uploaded image is not a clear leaf photo."}
               </p>
               {predictError.score !== undefined && (
-                <p className="text-xs mt-2">Confidence: {(predictError.score * 100).toFixed(1)}%</p>
+                <p className="text-xs mt-2">
+                  Leaf Confidence: {(predictError.score * 100).toFixed(1)}%
+                </p>
               )}
-              {predictError.non_leaf && Array.isArray(predictError.non_leaf) && (
-                <div className="mt-2 text-xs">
-                  <strong>Failed images:</strong>
-                  <ul className="list-disc ml-5 mt-1">
-                    {predictError.non_leaf.map((n: any, i: number) => (
-                      <li key={i}>{n.object_name} ({(n.score*100).toFixed(1)}%)</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {predictError.non_leaf &&
+                Array.isArray(predictError.non_leaf) && (
+                  <div className="mt-2 text-xs">
+                    <strong>Failed images:</strong>
+                    <ul className="list-disc ml-5 mt-1">
+                      {predictError.non_leaf.map((n: any, i: number) => (
+                        <li key={i}>
+                          {n.object_name} ({(n.score * 100).toFixed(1)}%)
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </div>
           )}
 

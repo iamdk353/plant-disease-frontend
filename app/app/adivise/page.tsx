@@ -109,7 +109,7 @@ export default function AdvisoryPage() {
     setIsFetchingReport(true);
     setSelectedReport(null);
     try {
-      let locData = null;
+      let locData: { lat: number; lon: number } | null = null;
       try {
         const getLoc = () =>
           new Promise<GeolocationPosition>((resolve, reject) => {
@@ -123,20 +123,41 @@ export default function AdvisoryPage() {
         // location optional — backend uses it for weather context only
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/ai/report`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prediction_id: activity.id,
-            location: locData,
-          }),
-        },
-      );
-      if (response.ok) {
-        const data = await response.json();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      // 1) Try GET first to fetch a cached report (no AI cost)
+      try {
+        const url = new URL(`${apiUrl}/api/ai/report`);
+        url.searchParams.set("prediction_id", activity.id);
+        if (locData) {
+          url.searchParams.set("lat", String(locData.lat));
+          url.searchParams.set("lon", String(locData.lon));
+        }
+        const getResp = await fetch(url.toString());
+        if (getResp.ok) {
+          const data = await getResp.json();
+          if (data && (data.report || data.report_text)) {
+            setSelectedReport(data);
+            return;
+          }
+        }
+      } catch (e) {
+        // GET failed or no cached report — fall through to POST
+        console.warn("GET /api/ai/report failed or no cached report", e);
+      }
+
+      // 2) No cached report found — POST to generate and save
+      const postResp = await fetch(`${apiUrl}/api/ai/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prediction_id: activity.id, location: locData }),
+      });
+
+      if (postResp.ok) {
+        const data = await postResp.json();
         setSelectedReport(data);
+      } else {
+        console.error("Report generation failed", postResp.status);
       }
     } catch (err) {
       console.error("Failed to generate report:", err);
@@ -714,15 +735,19 @@ export default function AdvisoryPage() {
 
                   {/* GENERATE BUTTON — shown when no report yet & not loading */}
                   {!isFetchingReport && !selectedReport && (
-                    <button
-                      onClick={() => generateReport(selectedActivity)}
-                      className="w-full py-4 rounded-2xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-xl">
-                        psychology
-                      </span>
-                      Generate AI Expert Report
-                    </button>
+                    <>
+                      <p className="text-sm text-on-surface-variant mb-3 text-center">
+                        No AI report found for this activity. Press Generate to create it.
+                      </p>
+                      <button
+                        onClick={() => generateReport(selectedActivity)}
+                        aria-label="Generate"
+                        className="w-full py-4 rounded-2xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-xl">psychology</span>
+                        Generate
+                      </button>
+                    </>
                   )}
 
                   {/* AI REPORT LOADING STATE */}
