@@ -4,10 +4,21 @@ import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Nav from "@/app/components/Nav";
 import Link from "next/link";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   const [location, setLocation] = useState<string>("Locating...");
 
@@ -26,7 +37,7 @@ export default function ProfilePage() {
           return;
         }
         const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`,
         );
         const data = await response.json();
 
@@ -51,7 +62,7 @@ export default function ProfilePage() {
         (error) => {
           console.error("Geolocation error:", error);
           setLocation("Location Access Denied");
-        }
+        },
       );
     } else {
       setLocation("Location Unavailable");
@@ -77,7 +88,10 @@ export default function ProfilePage() {
               <img
                 alt="Farmer's profile picture"
                 className="w-full h-full object-cover"
-                src={user?.photoURL || "https://lh3.googleusercontent.com/aida-public/AB6AXuCBfDGKi_Kn77VTyx7Gqqx7L4GUJ3NjdEvxL5NNMar8cRe1IEsoU_B44GY3sxEwET8k482E0CSXUer2J8Fkzy4hUcG4lJvSsQCPUgVETjCwuJIskjao5DskYmpC4IqxgC3c_-GbhyGH-NEP88DWUPiXCNnOrO9Bgy9tAYcpSqvELxlzraBiuoNRygzpm3-13Z8S8cQ8MtHXLaf_cbUktgNtO7YzUq2UamXqtZF8IapWa03wsvjxy-CR9NZdwMof4AqWQx7WD9N1R3r4"}
+                src={
+                  user?.photoURL ||
+                  "https://lh3.googleusercontent.com/aida-public/AB6AXuCBfDGKi_Kn77VTyx7Gqqx7L4GUJ3NjdEvxL5NNMar8cRe1IEsoU_B44GY3sxEwET8k482E0CSXUer2J8Fkzy4hUcG4lJvSsQCPUgVETjCwuJIskjao5DskYmpC4IqxgC3c_-GbhyGH-NEP88DWUPiXCNnOrO9Bgy9tAYcpSqvELxlzraBiuoNRygzpm3-13Z8S8cQ8MtHXLaf_cbUktgNtO7YzUq2UamXqtZF8IapWa03wsvjxy-CR9NZdwMof4AqWQx7WD9N1R3r4"
+                }
               />
             </div>
             <div className="flex-1 pb-4">
@@ -104,10 +118,16 @@ export default function ProfilePage() {
                 </span>
               </div>
             </div>
-            <div className="flex gap-3 pb-4">
+            <div className="flex flex-wrap gap-3 pb-4">
               <button className="bg-gradient-to-br from-[#486808] to-[#85a947] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95 transition-transform">
                 <span className="material-symbols-outlined">edit</span> Edit
                 Profile
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-surface-container-high text-on-surface-variant px-8 py-3 rounded-full font-bold border border-outline-variant/30 flex items-center gap-2 active:scale-95 transition-transform hover:bg-error/10 hover:text-error hover:border-error/20"
+              >
+                <span className="material-symbols-outlined">logout</span> Logout
               </button>
             </div>
           </div>
@@ -253,7 +273,9 @@ export default function ProfilePage() {
                 <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                   Registered Email
                 </p>
-                <p className="font-headline font-bold">{user?.email || "No email linked"}</p>
+                <p className="font-headline font-bold">
+                  {user?.email || "No email linked"}
+                </p>
               </div>
             </div>
             <div className="bg-primary p-6 rounded-xl shadow-lg flex items-center justify-center gap-3 text-white cursor-pointer hover:bg-primary/90 transition-colors">

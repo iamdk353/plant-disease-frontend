@@ -639,27 +639,6 @@ export default function AdvisoryPage() {
                     />
                   </div>
 
-                  {/* Raw Predictions */}
-                  <div className="bg-surface-container-low rounded-2xl p-4 shadow-sm border border-outline-variant/30">
-                    <h3 className="font-bold text-sm uppercase tracking-wider text-on-surface-variant/70 mb-3">
-                      Model Predictions
-                    </h3>
-                    <div className="space-y-2">
-                      {selectedActivity.results.map((r) => (
-                        <div
-                          key={r.rank}
-                          className="flex justify-between items-center"
-                        >
-                          <span className="text-sm text-on-surface capitalize">
-                            {r.label.replace(/_/g, " ")}
-                          </span>
-                          <span className="text-xs font-mono font-bold bg-primary/10 text-primary px-2 py-1 rounded-md">
-                            {(r.confidence * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                   {/* GENERATE BUTTON — shown when no report yet & not loading */}
                   {!isFetchingReport && !selectedReport && (
                     <button
