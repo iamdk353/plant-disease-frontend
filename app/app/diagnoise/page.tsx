@@ -37,19 +37,19 @@ export default function DiagnosePage() {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      
+
       // If a previous stream got orphaned by StrictMode double-mounting, kill it now.
       if (streamRef.current) {
-         streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current.getTracks().forEach((t) => t.stop());
       }
-      
-      // If the component unmounted, OR the user already snapped a photo/uploaded a file 
+
+      // If the component unmounted, OR the user already snapped a photo/uploaded a file
       // while we were waiting for permissions, we must aggressively stop the newly spawned stream.
       if (!isMounted.current || !isCameraActive.current) {
-         stream.getTracks().forEach(track => track.stop());
-         return;
+        stream.getTracks().forEach((track) => track.stop());
+        return;
       }
-      
+
       streamRef.current = stream;
       setTimeout(() => {
         if (videoRef.current) {
@@ -119,9 +119,10 @@ export default function DiagnosePage() {
   const runDiagnostic = async () => {
     if (!user || (!capturedImage && !selectedFile)) return;
     setIsAnalyzing(true);
+    setPredictError(null);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      
+
       // 1. Prepare File
       let fileToUpload: Blob;
       if (selectedFile) {
@@ -155,9 +156,24 @@ export default function DiagnosePage() {
         body: JSON.stringify({
           object_names: [objectName], // Wait, predict schema
           uid: user.uid,
-          object_name: objectName
+          object_name: objectName,
         }),
       });
+
+      // New: handle non-leaf/plant response (HTTP 422) from backend
+      if (predictRes.status === 422) {
+        try {
+          const errJson = await predictRes.json();
+          const detail = errJson?.detail || {};
+          // detail may contain message, score, or non_leaf array for batch
+          setPredictError(detail);
+        } catch (parseErr) {
+          console.error('Failed to parse 422 response', parseErr);
+          setPredictError({ message: 'Uploaded image is not a leaf/plant.' });
+        }
+        setResult(null);
+        return;
+      }
 
       if (!predictRes.ok) {
         throw new Error("Prediction failed");
@@ -165,7 +181,6 @@ export default function DiagnosePage() {
 
       const predictData = await predictRes.json();
       setResult(predictData);
-
     } catch (err) {
       console.error(err);
       alert("Diagnostic failed. Please try again.");
@@ -226,7 +241,7 @@ export default function DiagnosePage() {
       ) : (
         <div className="fixed inset-0 z-[100] bg-surface flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto">
           <div className="absolute top-6 right-6 flex gap-4">
-             <button
+            <button
               onClick={() => fileInputRef.current?.click()}
               className="bg-surface-container-high text-on-surface w-12 h-12 rounded-full flex justify-center items-center hover:bg-surface-container-highest transition"
               title="Upload Different Crop"
@@ -243,9 +258,9 @@ export default function DiagnosePage() {
           <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0 mt-16 sm:mt-0">
             {result ? "Diagnostic Complete" : "Analyzing Crop..."}
           </h2>
-          <div className="relative w-full max-w-sm h-auto max-h-[50vh] aspect-[3/4] mb-8 shrink mx-auto rounded-[2rem] shadow-2xl border-4 border-primary/20 overflow-hidden">
+          <div className="relative w-full max-w-sm h-[45vh] aspect-[3/4] mb-8 shrink mx-auto rounded-[2rem] shadow-2xl border-4 border-primary/20 overflow-hidden">
             <img
-              src={capturedImage}
+              src={capturedImage || undefined}
               alt="Captured crop"
               className="w-full h-full object-cover"
             />
@@ -253,29 +268,58 @@ export default function DiagnosePage() {
               <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none"></div>
             )}
           </div>
-          
+
+          {predictError && (
+            <div className="w-full max-w-sm bg-error-container text-on-error-container rounded-2xl p-4 mb-4 shadow-md">
+              <h4 className="font-bold mb-2">Not a leaf image</h4>
+              <p className="text-sm">
+                {predictError.message || "Uploaded image is not a clear leaf photo."}
+              </p>
+              {predictError.score !== undefined && (
+                <p className="text-xs mt-2">Confidence: {(predictError.score * 100).toFixed(1)}%</p>
+              )}
+              {predictError.non_leaf && Array.isArray(predictError.non_leaf) && (
+                <div className="mt-2 text-xs">
+                  <strong>Failed images:</strong>
+                  <ul className="list-disc ml-5 mt-1">
+                    {predictError.non_leaf.map((n: any, i: number) => (
+                      <li key={i}>{n.object_name} ({(n.score*100).toFixed(1)}%)</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
           {result && (
             <div className="w-full max-w-sm bg-surface-container rounded-2xl p-4 mb-8 shadow-md">
-              <h3 className="font-bold text-xl mb-4 font-headline">Predictions</h3>
+              <h3 className="font-bold text-xl mb-4 font-headline">
+                Predictions
+              </h3>
               {result.top_predictions?.map((pred: any, i: number) => (
                 <div key={i} className="flex justify-between items-center mb-2">
-                  <span className="capitalize">{pred.label.replace(/_/g, ' ')}</span>
+                  <span className="capitalize">
+                    {pred.label.replace(/_/g, " ")}
+                  </span>
                   <span className="font-mono bg-primary/10 text-primary px-2 py-1 rounded-md">
                     {(pred.confidence * 100).toFixed(1)}%
                   </span>
                 </div>
               ))}
-              
+
               {/* Prediction complete — direct user to Advisory for AI analysis */}
               <div className="mt-6 pt-4 border-t border-outline-variant/40">
                 <p className="text-xs text-on-surface-variant/60 mb-3 text-center">
-                  Open the Advisory page to generate a full AI expert report for this diagnosis.
+                  Open the Advisory page to generate a full AI expert report for
+                  this diagnosis.
                 </p>
                 <button
-                  onClick={() => router.push('/app/adivise')}
+                  onClick={() => router.push("/app/adivise")}
                   className="w-full py-3 rounded-full font-bold bg-primary text-on-primary shadow-md hover:shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-xl">grass</span>
+                  <span className="material-symbols-outlined text-xl">
+                    grass
+                  </span>
                   View in Advisory
                 </button>
               </div>
@@ -301,7 +345,7 @@ export default function DiagnosePage() {
               Retake Photo
             </button>
             {!result && (
-              <button 
+              <button
                 onClick={runDiagnostic}
                 disabled={isAnalyzing}
                 className="flex-1 py-4 rounded-full font-bold signature-gradient text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"

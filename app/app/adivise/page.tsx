@@ -145,6 +145,35 @@ export default function AdvisoryPage() {
     }
   };
 
+  const loadReportIfExists = async (activity: Activity) => {
+    if (!activity) return;
+    setSelectedActivity(activity);
+    setSelectedReport(null);
+
+    // If activity already includes a report object, render it directly
+    if (activity.report && (activity.report.report || activity.report.report_text)) {
+      setSelectedReport(activity.report);
+      return;
+    }
+
+    // Otherwise, try to fetch an existing report from the backend (do not trigger generation)
+    try {
+      setIsFetchingReport(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const resp = await fetch(`${apiUrl}/api/ai/report?prediction_id=${activity.id}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && (data.report || data.report_text)) {
+          setSelectedReport(data);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch existing report:", err);
+    } finally {
+      setIsFetchingReport(false);
+    }
+  };
+
   const fetchCropRecommendation = async () => {
     if (!user) return;
 
@@ -223,11 +252,42 @@ export default function AdvisoryPage() {
     }
   };
 
+  const handleRegeneratePlan = async () => {
+    if (!user) return;
+    try {
+      const cacheKey = `ai_crop_plan_${user.uid}`;
+      localStorage.removeItem(cacheKey);
+      setCropPlan(null);
+      // Trigger a fresh fetch which will bypass cache
+      await fetchCropRecommendation();
+    } catch (err) {
+      console.error("Failed to regenerate plan:", err);
+      alert("Could not regenerate plan. Please try again.");
+    }
+  };
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
     }
   }, [user, loading, router]);
+
+  // Restore cached crop plan (keeps UI state across route changes)
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const cacheKey = `ai_crop_plan_${user.uid}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (!cached) return;
+      const parsed = JSON.parse(cached);
+      const ageHours = (Date.now() - parsed.timestamp) / (1000 * 60 * 60);
+      if (ageHours < 24 && parsed.data) {
+        setCropPlan(parsed.data);
+      }
+    } catch (err) {
+      console.warn("Failed to restore cached crop plan:", err);
+    }
+  }, [user]);
 
   useEffect(() => {
     const generateAdvisory = () => {
@@ -457,10 +517,7 @@ export default function AdvisoryPage() {
                   return (
                     <div
                       key={activity.id}
-                      onClick={() => {
-                        setSelectedActivity(activity);
-                        setSelectedReport(activity.report || null);
-                      }}
+                      onClick={() => loadReportIfExists(activity)}
                       className="p-3 bg-surface-container-low rounded-xl shadow-sm border border-outline-variant/30 flex items-center gap-3 cursor-pointer hover:bg-surface-container transition-colors group"
                     >
                       <div className="w-12 h-12 rounded-lg bg-surface-variant overflow-hidden flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -523,42 +580,58 @@ export default function AdvisoryPage() {
                   metrics.
                 </p>
 
-                <button
-                  onClick={fetchCropRecommendation}
-                  disabled={isGeneratingPlan}
-                  className="w-full py-4 rounded-xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100"
-                >
-                  {isGeneratingPlan ? (
-                    <>
-                      <span className="material-symbols-outlined animate-spin text-xl">
-                        psychology
-                      </span>
-                      Automatically Analyzing Environment...
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-xl">
-                        view_timeline
-                      </span>
-                      Generate Strategy
-                    </>
-                  )}
-                </button>
+                {!cropPlan && (
+                  <button
+                    onClick={fetchCropRecommendation}
+                    disabled={isGeneratingPlan}
+                    className="w-full py-4 rounded-xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100"
+                  >
+                    {isGeneratingPlan ? (
+                      <>
+                        <span className="material-symbols-outlined animate-spin text-xl">
+                          psychology
+                        </span>
+                        Automatically Analyzing Environment...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-xl">
+                          view_timeline
+                        </span>
+                        Generate Strategy
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
 
               {cropPlan && (
                 <div className="border-t border-outline-variant/30 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">
-                        Detected Soil Profile
-                      </p>
-                      <p className="text-on-surface font-headline font-bold text-lg">
-                        {cropPlan.deduced_soil_type}
-                      </p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">
+                            Detected Soil Profile
+                          </p>
+                          <p className="text-on-surface font-headline font-bold text-lg">
+                            {cropPlan.deduced_soil_type}
+                          </p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                          <span className="material-symbols-outlined">terrain</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
-                      <span className="material-symbols-outlined">terrain</span>
+
+                    <div className="ml-4">
+                      <button
+                        onClick={handleRegeneratePlan}
+                        disabled={isGeneratingPlan}
+                        className="px-4 py-2 rounded-full bg-surface-container-high border border-outline-variant text-sm font-bold hover:bg-surface-container-lowest transition disabled:opacity-60"
+                      >
+                        {isGeneratingPlan ? "Regenerating..." : "Regenerate Plan"}
+                      </button>
                     </div>
                   </div>
 
