@@ -64,7 +64,10 @@ export default function AdvisoryPage() {
     [],
   );
   const [aiAdvice, setAiAdvice] = useState<string[]>([]);
-  const [selectedStory, setSelectedStory] = useState<any>(null);
+  const [soilType, setSoilType] = useState("Well-drained red soil");
+  const [marketTrends, setMarketTrends] = useState("");
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [cropPlan, setCropPlan] = useState<any[] | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
@@ -100,37 +103,124 @@ export default function AdvisoryPage() {
     fetchActivities();
   }, [user]);
 
-  useEffect(() => {
-    const fetchReport = async () => {
-      if (!selectedActivity) {
-        setSelectedReport(null);
-        return;
-      }
-      setIsFetchingReport(true);
+  const generateReport = async (activity: Activity) => {
+    if (!activity) return;
+    setIsFetchingReport(true);
+    setSelectedReport(null);
+    try {
+      let locData = null;
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/ai/report`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              prediction_id: selectedActivity.id,
-              location: null,
-            }),
-          },
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setSelectedReport(data);
+        const getLoc = () =>
+          new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 8000,
+            });
+          });
+        const pos = await getLoc();
+        locData = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      } catch {
+        // location optional — backend uses it for weather context only
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/ai/report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prediction_id: activity.id,
+            location: locData,
+          }),
+        },
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedReport(data);
+      }
+    } catch (err) {
+      console.error("Failed to generate report:", err);
+    } finally {
+      setIsFetchingReport(false);
+    }
+  };
+
+  const fetchCropRecommendation = async () => {
+    if (!user) return;
+
+    // Check localStorage cache first to abide by the "one row per person" backend constraint
+    // and prevent unnecessary LLM spam if requested within a 24-hour window
+    const cacheKey = `ai_crop_plan_${user.uid}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const ageHours = (Date.now() - parsed.timestamp) / (1000 * 60 * 60);
+        if (ageHours < 24 && parsed.data) {
+          setCropPlan(parsed.data);
+          return;
         }
       } catch (err) {
-        console.error("Failed to fetch report:", err);
-      } finally {
-        setIsFetchingReport(false);
+        console.warn("Invalid cache for crop plan, fetching fresh.");
       }
-    };
-    fetchReport();
-  }, [selectedActivity]);
+    }
+
+    setIsGeneratingPlan(true);
+
+    let locData = null;
+    try {
+      const getLoc = () =>
+        new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            timeout: 10000,
+          });
+        });
+      const position = await getLoc();
+      locData = {
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+      };
+    } catch (locErr) {
+      console.warn("Could not fetch location:", locErr);
+      // Fallback default coordinates if location fails (e.g., center of Karnataka to fit the knowledge base)
+      locData = { lat: 15.3173, lon: 75.7139 };
+    }
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const payload = {
+        uid: user.uid,
+        location: locData,
+      };
+
+      const response = await fetch(`${apiUrl}/api/ai/crop-plan`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch crop plan");
+      }
+
+      const data = await response.json();
+      setCropPlan(data); // saving the full response including deduced_soil_type
+
+      // Save directly to localStorage caching
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          timestamp: Date.now(),
+          data: data,
+        }),
+      );
+    } catch (error) {
+      console.error("Error generating crop plan:", error);
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -410,107 +500,103 @@ export default function AdvisoryPage() {
             </div>
           </div>
 
-          {/* Right Column: 70% - Story Interface Grid */}
+          {/* Right Column: 70% - Crop Planner */}
           <div className="w-full md:w-[70%]">
-            <h2 className="text-xl font-bold font-headline mb-4 text-on-surface">
-              Advisory Stories
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5, 6].map((storyId) => (
-                <div
-                  key={storyId}
-                  onClick={() =>
-                    setSelectedStory({
-                      id: storyId,
-                      title: `Advisory Story ${storyId}`,
-                      description:
-                        "Detailed information about this specific advisory story goes here. This provides the user with in-depth knowledge and actionable steps to improve their crop yield and handle unexpected issues in the field.",
-                      image: `https://picsum.photos/400/600?random=${storyId}`,
-                    })
-                  }
-                  className="aspect-[3/4] bg-surface-variant rounded-2xl cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1 transition-all overflow-hidden relative group"
-                >
-                  <img
-                    src={`https://picsum.photos/400/600?random=${storyId}`}
-                    alt={`Story ${storyId}`}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold font-headline text-on-surface">
+                AI Crop Planner
+              </h2>
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                Experimental
+              </span>
+            </div>
 
-                  {/* Content */}
-                  <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col gap-1">
-                    <div className="flex gap-1 mb-1">
-                      <span className="w-8 h-1 bg-white/80 rounded-full"></span>
-                      <span className="w-8 h-1 bg-white/30 rounded-full"></span>
-                      <span className="w-8 h-1 bg-white/30 rounded-full"></span>
+            <div className="bg-surface-container-low rounded-[2rem] p-6 md:p-8 shadow-sm border border-outline-variant/30 flex flex-col gap-6">
+              <div>
+                <p className="text-on-surface-variant text-sm mb-6 max-w-xl">
+                  Generate sustainable crop cycles customized exactly to your
+                  live soil profile, market trajectories, and localized weather
+                  metrics.
+                </p>
+
+                <button
+                  onClick={fetchCropRecommendation}
+                  disabled={isGeneratingPlan}
+                  className="w-full py-4 rounded-xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100"
+                >
+                  {isGeneratingPlan ? (
+                    <>
+                      <span className="material-symbols-outlined animate-spin text-xl">
+                        psychology
+                      </span>
+                      Automatically Analyzing Environment...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-xl">
+                        view_timeline
+                      </span>
+                      Generate Strategy
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {cropPlan && (
+                <div className="border-t border-outline-variant/30 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">
+                        Detected Soil Profile
+                      </p>
+                      <p className="text-on-surface font-headline font-bold text-lg">
+                        {cropPlan.deduced_soil_type}
+                      </p>
                     </div>
-                    <h3 className="text-white font-bold font-headline text-sm leading-tight drop-shadow-md">
-                      Advisory Story {storyId}
-                    </h3>
-                    <p className="text-white/80 text-[10px] font-medium drop-shadow-md">
-                      Tap to view details
-                    </p>
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined">terrain</span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-bold text-lg mb-5 text-on-surface flex items-center gap-2 font-headline">
+                    <span className="material-symbols-outlined text-primary">
+                      verified
+                    </span>
+                    Recommended Planting Schedule
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {cropPlan.recommended_crops.map(
+                      (crop: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="bg-surface hover:bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/20 hover:border-primary/40 transition-colors group cursor-default"
+                        >
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm shrink-0 shadow-sm shadow-primary/20 group-hover:scale-110 transition-transform">
+                              {idx + 1}
+                            </div>
+                            <h4 className="font-bold text-lg text-on-surface leading-tight">
+                              {crop.crop}
+                            </h4>
+                          </div>
+                          <p className="text-sm text-on-surface-variant leading-relaxed">
+                            {crop.reason}
+                          </p>
+                        </div>
+                      ),
+                    )}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
-
-        {/* Modal Overlay for Stories */}
-        {selectedStory && (
-          <div
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
-            onClick={() => setSelectedStory(null)}
-          >
-            <div
-              className="bg-surface rounded-[2rem] w-full max-w-md overflow-hidden relative shadow-2xl cursor-auto animate-in fade-in zoom-in-95 duration-200"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close Button */}
-              <button
-                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors z-20 backdrop-blur-sm"
-                onClick={() => setSelectedStory(null)}
-              >
-                <span className="material-symbols-outlined text-sm">close</span>
-              </button>
-
-              {/* Modal Image */}
-              <div className="h-64 w-full bg-surface-variant relative">
-                <img
-                  src={selectedStory.image}
-                  alt={selectedStory.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
-              </div>
-
-              {/* Modal Content */}
-              <div className="p-8 pt-2">
-                <h2 className="text-3xl font-extrabold font-headline mb-3 text-on-surface">
-                  {selectedStory.title}
-                </h2>
-                <p className="text-on-surface-variant text-sm leading-relaxed tracking-wide mb-8">
-                  {selectedStory.description}
-                </p>
-                <button
-                  className="w-full bg-primary text-on-primary py-4 rounded-full font-bold shadow-md hover:shadow-lg active:scale-[0.98] transition-all"
-                  onClick={() => setSelectedStory(null)}
-                >
-                  Understood
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Modal Overlay for Recent Activity */}
         {selectedActivity && (
           <div
             className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
-            onClick={() => setSelectedActivity(null)}
+            onClick={() => { setSelectedActivity(null); setSelectedReport(null); }}
           >
             <div
               className="bg-surface rounded-[2rem] w-[90%] md:w-[80%] h-[80%] overflow-hidden relative shadow-2xl cursor-auto animate-in fade-in zoom-in-95 duration-200 flex flex-col"
@@ -525,7 +611,7 @@ export default function AdvisoryPage() {
                 </h2>
                 <button
                   className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-surface-variant text-on-surface-variant hover:bg-surface-variant/80 transition-colors"
-                  onClick={() => setSelectedActivity(null)}
+                  onClick={() => { setSelectedActivity(null); setSelectedReport(null); }}
                 >
                   <span className="material-symbols-outlined">close</span>
                 </button>
@@ -534,14 +620,49 @@ export default function AdvisoryPage() {
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col items-center">
                 <div className="w-full max-w-lg space-y-4 pb-10">
+
+                  {/* Image */}
+                  <div className="w-full max-w-lg aspect-square rounded-2xl overflow-hidden shadow-lg ring-1 ring-outline-variant/20">
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${selectedActivity.image_name}`}
+                      alt="Activity Image"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Raw Predictions */}
+                  <div className="bg-surface-container-low rounded-2xl p-4 shadow-sm border border-outline-variant/30">
+                    <h3 className="font-bold text-sm uppercase tracking-wider text-on-surface-variant/70 mb-3">Model Predictions</h3>
+                    <div className="space-y-2">
+                      {selectedActivity.results.map((r) => (
+                        <div key={r.rank} className="flex justify-between items-center">
+                          <span className="text-sm text-on-surface capitalize">{r.label.replace(/_/g, " ")}</span>
+                          <span className="text-xs font-mono font-bold bg-primary/10 text-primary px-2 py-1 rounded-md">
+                            {(r.confidence * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* GENERATE BUTTON — shown when no report yet & not loading */}
+                  {!isFetchingReport && !selectedReport && (
+                    <button
+                      onClick={() => generateReport(selectedActivity)}
+                      className="w-full py-4 rounded-2xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-xl">psychology</span>
+                      Generate AI Expert Report
+                    </button>
+                  )}
+
                   {/* AI REPORT LOADING STATE */}
                   {isFetchingReport && (
-                    <div className="mt-8 pt-6 border-t border-outline-variant/30 flex flex-col gap-4">
+                    <div className="mt-4 pt-6 border-t border-outline-variant/30 flex flex-col gap-4">
                       <div className="flex items-center gap-2 text-primary font-bold animate-pulse">
                         <span className="material-symbols-outlined animate-spin text-xl">
                           psychology
                         </span>
-                        Loading AI Analysis...
+                        Generating AI Analysis... (may take ~10s)
                       </div>
                       <div className="h-4 w-full bg-surface-variant/50 animate-pulse rounded-full"></div>
                       <div className="h-4 w-[80%] bg-surface-variant/50 animate-pulse rounded-full"></div>
@@ -550,127 +671,103 @@ export default function AdvisoryPage() {
                   )}
 
                   {/* AI REPORT FULL RENDER */}
-                  {!isFetchingReport &&
-                    selectedReport &&
-                    selectedReport.report && (
-                      <>
-                        <div className="w-full max-w-lg aspect-square rounded-2xl overflow-hidden mb-8 shadow-lg ring-1 ring-outline-variant/20">
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${selectedActivity.image_name}`}
-                            alt="Activity Image"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="mt-8 pt-6 border-t border-outline-variant/30">
-                          <h3 className="font-bold text-xl mb-3 font-headline text-primary flex items-center gap-2">
-                            <span className="material-symbols-outlined">
-                              verified
-                            </span>
-                            AI Expert Analysis
-                          </h3>
-                          <p className="text-sm text-on-surface-variant mb-5 leading-relaxed">
-                            {selectedReport.report.report_text}
-                          </p>
+                  {!isFetchingReport && selectedReport && selectedReport.report && (
+                    <>
+                      <div className="pt-6 border-t border-outline-variant/30">
+                        <h3 className="font-bold text-xl mb-3 font-headline text-primary flex items-center gap-2">
+                          <span className="material-symbols-outlined">verified</span>
+                          AI Expert Analysis
+                        </h3>
+                        <p className="text-sm text-on-surface-variant mb-5 leading-relaxed">
+                          {selectedReport.report.report_text}
+                        </p>
 
-                          {selectedReport.expert_analysis && (
-                            <div className="bg-primary/5 p-4 rounded-xl text-sm mb-5 border border-primary/10">
-                              <p className="flex items-start gap-2">
-                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
-                                  find_in_page
-                                </span>
-                                <span>
-                                  <strong>Cause:</strong>{" "}
-                                  {selectedReport.expert_analysis.cause}
-                                </span>
-                              </p>
-                              <p className="mt-3 flex items-start gap-2">
-                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
-                                  thermostat
-                                </span>
-                                <span>
-                                  <strong>Weather Impact:</strong>{" "}
-                                  {
-                                    selectedReport.expert_analysis
-                                      .weather_impact
-                                  }
-                                </span>
-                              </p>
+                        {selectedReport.expert_analysis && (
+                          <div className="bg-primary/5 p-4 rounded-xl text-sm mb-5 border border-primary/10">
+                            <p className="flex items-start gap-2">
+                              <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
+                                find_in_page
+                              </span>
+                              <span>
+                                <strong>Cause:</strong>{" "}
+                                {selectedReport.expert_analysis.cause}
+                              </span>
+                            </p>
+                            <p className="mt-3 flex items-start gap-2">
+                              <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
+                                thermostat
+                              </span>
+                              <span>
+                                <strong>Weather Impact:</strong>{" "}
+                                {selectedReport.expert_analysis.weather_impact}
+                              </span>
+                            </p>
+                          </div>
+                        )}
+
+                        {selectedReport.report.treatments &&
+                          selectedReport.report.treatments.length > 0 && (
+                            <div className="mb-5">
+                              <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
+                                <span className="material-symbols-outlined text-base">medication</span>
+                                Step-by-Step Treatment
+                              </h4>
+                              <div className="space-y-3">
+                                {selectedReport.report.treatments.map(
+                                  (treatment: any, i: number) => (
+                                    <div
+                                      key={i}
+                                      className="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30"
+                                    >
+                                      <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold shrink-0">
+                                        {i + 1}
+                                      </div>
+                                      <div className="text-sm">
+                                        <p className="text-on-surface">{treatment.step}</p>
+                                        {treatment.dosage && (
+                                          <p className="text-xs text-primary font-bold mt-1 uppercase tracking-wider">
+                                            {treatment.dosage}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
                             </div>
                           )}
 
-                          {selectedReport.report.treatments &&
-                            selectedReport.report.treatments.length > 0 && (
-                              <div className="mb-5">
-                                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
-                                  <span className="material-symbols-outlined text-base">
-                                    medication
-                                  </span>
-                                  Step-by-Step Treatment
-                                </h4>
-                                <div className="space-y-3">
-                                  {selectedReport.report.treatments.map(
-                                    (treatment: any, i: number) => (
-                                      <div
+                        {selectedReport.product_links &&
+                          selectedReport.product_links.length > 0 && (
+                            <div>
+                              <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
+                                <span className="material-symbols-outlined text-base">shopping_cart</span>
+                                Recommended Products
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedReport.product_links.map(
+                                  (link: string, i: number) => {
+                                    const domain = new URL(link).hostname.replace("www.", "");
+                                    return (
+                                      <a
                                         key={i}
-                                        className="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30"
+                                        href={link}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="bg-surface-variant hover:bg-primary hover:text-on-primary text-on-surface text-xs font-bold px-3 py-2 rounded-full transition-colors flex items-center gap-1"
                                       >
-                                        <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold shrink-0">
-                                          {i + 1}
-                                        </div>
-                                        <div className="text-sm">
-                                          <p className="text-on-surface">
-                                            {treatment.step}
-                                          </p>
-                                          {treatment.dosage && (
-                                            <p className="text-xs text-primary font-bold mt-1 uppercase tracking-wider">
-                                              {treatment.dosage}
-                                            </p>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
+                                        {domain}{" "}
+                                        <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                                      </a>
+                                    );
+                                  },
+                                )}
                               </div>
-                            )}
-
-                          {selectedReport.product_links &&
-                            selectedReport.product_links.length > 0 && (
-                              <div>
-                                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
-                                  <span className="material-symbols-outlined text-base">
-                                    shopping_cart
-                                  </span>
-                                  Recommended Products
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                  {selectedReport.product_links.map(
-                                    (link: string, i: number) => {
-                                      const domain = new URL(
-                                        link,
-                                      ).hostname.replace("www.", "");
-                                      return (
-                                        <a
-                                          key={i}
-                                          href={link}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="bg-surface-variant hover:bg-primary hover:text-on-primary text-on-surface text-xs font-bold px-3 py-2 rounded-full transition-colors flex items-center gap-1"
-                                        >
-                                          {domain}{" "}
-                                          <span className="material-symbols-outlined text-[10px]">
-                                            open_in_new
-                                          </span>
-                                        </a>
-                                      );
-                                    },
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                        </div>
-                      </>
-                    )}
+                            </div>
+                          )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

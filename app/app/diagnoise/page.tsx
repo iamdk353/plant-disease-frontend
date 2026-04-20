@@ -9,7 +9,6 @@ export default function DiagnosePage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [result, setResult] = useState<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -167,40 +166,6 @@ export default function DiagnosePage() {
       const predictData = await predictRes.json();
       setResult(predictData);
 
-      // Fetch AI Report
-      if (predictData.prediction_id) {
-          setIsGeneratingReport(true);
-          // Get Live Location
-          let locData = null;
-          try {
-             const getLoc = () => new Promise<GeolocationPosition>((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
-             });
-             const position = await getLoc();
-             locData = {
-                lat: position.coords.latitude,
-                lon: position.coords.longitude
-             };
-          } catch (locErr) {
-             console.warn("Could not fetch location:", locErr);
-          }
-
-          const aiReportRes = await fetch(`${apiUrl}/api/ai/report`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                  prediction_id: predictData.prediction_id,
-                  location: locData
-              })
-          });
-
-          if (aiReportRes.ok) {
-              const reportData = await aiReportRes.json();
-              setResult({ ...predictData, ai_report: reportData });
-          }
-          setIsGeneratingReport(false);
-      }
-
     } catch (err) {
       console.error(err);
       alert("Diagnostic failed. Please try again.");
@@ -301,33 +266,19 @@ export default function DiagnosePage() {
                 </div>
               ))}
               
-              {isGeneratingReport && (
-                <div className="mt-6 pt-6 border-t border-outline-variant flex flex-col gap-4">
-                  <div className="flex items-center gap-2 text-primary font-bold animate-pulse">
-                    <span className="material-symbols-outlined animate-spin text-xl">psychology</span>
-                    Generating AI Expert Analysis...
-                  </div>
-                  <div className="h-4 w-full bg-surface-variant/50 animate-pulse rounded-full"></div>
-                  <div className="h-4 w-[80%] bg-surface-variant/50 animate-pulse rounded-full"></div>
-                  <div className="h-24 w-full bg-surface-variant/50 animate-pulse rounded-xl mt-2"></div>
-                </div>
-              )}
-              
-              {result.ai_report && !isGeneratingReport && (
-                <div className="mt-6 pt-4 border-t border-outline-variant text-center">
-                  <div className="inline-flex items-center justify-center p-3 bg-secondary-container text-on-secondary-container rounded-full mb-3">
-                    <span className="material-symbols-outlined text-3xl">check_circle</span>
-                  </div>
-                  <h3 className="font-bold text-lg font-headline text-on-surface">AI Expert Report Saved</h3>
-                  <p className="text-sm text-on-surface-variant mb-4">A complete agricultural analysis has been generated for your record.</p>
-                  <button 
-                    onClick={() => router.push('/app/adivise')}
-                    className="w-full py-3 rounded-full font-bold bg-primary text-on-primary shadow-md hover:shadow-lg transition-transform active:scale-95"
-                  >
-                    Read Full Advisory Report
-                  </button>
-                </div>
-              )}
+              {/* Prediction complete — direct user to Advisory for AI analysis */}
+              <div className="mt-6 pt-4 border-t border-outline-variant/40">
+                <p className="text-xs text-on-surface-variant/60 mb-3 text-center">
+                  Open the Advisory page to generate a full AI expert report for this diagnosis.
+                </p>
+                <button
+                  onClick={() => router.push('/app/adivise')}
+                  className="w-full py-3 rounded-full font-bold bg-primary text-on-primary shadow-md hover:shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-xl">grass</span>
+                  View in Advisory
+                </button>
+              </div>
             </div>
           )}
 
