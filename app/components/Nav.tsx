@@ -22,7 +22,7 @@ const Nav = () => {
           potted_plant
         </span>
         <span className="text-2xl font-bold text-primary font-headline tracking-tight">
-          AgriAI
+          AgriNex AI
         </span>
       </Link>
 
@@ -63,7 +63,10 @@ const Nav = () => {
                 ? "border-primary shadow-sm"
                 : "border-primary-container hover:border-primary"
             }`}
-            src={user?.photoURL || "https://lh3.googleusercontent.com/aida-public/AB6AXuAmpoiOZqcAQ_P3iOTpDrGnx5hhdsKM2oFwKmRj4ahKH7KXcvclWH8HVBEJx9K0jce8tZIAPY8rNn-0QqvT5gT09QrIbry_E2VHp-FLw79UQtaSBFCpFGssjUdsLgWjtDHUxFuVRaMeY7aU8KkABTY9kYWWBrlAtcPXyyQV8txzzUCUN-Aasq218pspk_ef4ruoX_Pzhdqhn1od1EFBRsl1hprYZKi7V1CGcW05LAy8mIK-uSBRUKWGHS40liOH_KpELIs1Voh3T4ZH"}
+            src={
+              user?.photoURL ||
+              "https://lh3.googleusercontent.com/aida-public/AB6AXuAmpoiOZqcAQ_P3iOTpDrGnx5hhdsKM2oFwKmRj4ahKH7KXcvclWH8HVBEJx9K0jce8tZIAPY8rNn-0QqvT5gT09QrIbry_E2VHp-FLw79UQtaSBFCpFGssjUdsLgWjtDHUxFuVRaMeY7aU8KkABTY9kYWWBrlAtcPXyyQV8txzzUCUN-Aasq218pspk_ef4ruoX_Pzhdqhn1od1EFBRsl1hprYZKi7V1CGcW05LAy8mIK-uSBRUKWGHS40liOH_KpELIs1Voh3T4ZH"
+            }
           />
         </Link>
       </div>

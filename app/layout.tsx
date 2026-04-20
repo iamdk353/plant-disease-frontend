@@ -13,7 +13,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "AgriAI - Nurturing Digital Growth",
+  title: "AgriNex - Nurturing Digital Growth",
   description: "Transform your farming with real-time digital insights.",
 };
 
@@ -25,7 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`light ${inter.variable} ${manrope.variable}`}>
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container flex flex-col min-h-screen antialiased">
         {children}

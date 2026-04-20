@@ -20,7 +20,7 @@ export default function Home() {
       <nav className="fixed top-0 w-full z-50 glass-nav bg-[#f6faf4]/80">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
           <div className="text-2xl font-bold text-[#486808] font-headline tracking-tight">
-            AgriAI
+            AgriNex AI
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a
@@ -49,10 +49,16 @@ export default function Home() {
             </a>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/auth/login" className="hidden md:block px-6 py-2 text-[#486808] font-semibold hover:bg-[#f1f5ef] rounded-full transition-all duration-200">
+            <Link
+              href="/auth/login"
+              className="hidden md:block px-6 py-2 text-[#486808] font-semibold hover:bg-[#f1f5ef] rounded-full transition-all duration-200"
+            >
               Login
             </Link>
-            <Link href="/auth/signup" className="px-6 py-3 signature-gradient text-on-primary font-bold rounded-full transition-all active:scale-95 duration-200">
+            <Link
+              href="/auth/signup"
+              className="px-6 py-3 signature-gradient text-on-primary font-bold rounded-full transition-all active:scale-95 duration-200"
+            >
               Get Started
             </Link>
           </div>
@@ -183,7 +189,10 @@ export default function Home() {
                 </div>
               </div>
               {/* Feature Card 2 */}
-              <div id="advisory" className="bg-primary p-10 rounded-lg flex flex-col justify-between text-on-primary soft-shadow">
+              <div
+                id="advisory"
+                className="bg-primary p-10 rounded-lg flex flex-col justify-between text-on-primary soft-shadow"
+              >
                 <div className="space-y-6">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                     <span
@@ -224,7 +233,10 @@ export default function Home() {
                 </p>
               </div>
               {/* Feature Card 4 */}
-              <div id="community" className="md:col-span-2 bg-secondary-container p-10 rounded-lg flex items-center justify-between gap-8 soft-shadow overflow-hidden relative">
+              <div
+                id="community"
+                className="md:col-span-2 bg-secondary-container p-10 rounded-lg flex items-center justify-between gap-8 soft-shadow overflow-hidden relative"
+              >
                 <div className="relative z-10 max-w-md">
                   <h3 className="text-2xl font-headline font-bold text-on-secondary-container mb-4">
                     Farmer Community
@@ -305,7 +317,7 @@ export default function Home() {
                   </span>
                 </div>
                 <p className="text-2xl md:text-4xl font-headline font-medium text-on-surface leading-tight italic">
-                  &quot;AgriAI saved my tomato crop this season. The disease
+                  &quot;AgriNex AI saved my tomato crop this season. The disease
                   detection picked up blight before I even noticed the spots.
                   It&apos;s like having a botanist in my pocket.&quot;
                 </p>
@@ -347,10 +359,10 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="font-manrope font-bold text-2xl text-[#181d19]">
-              AgriAI
+              AgriNex AI
             </div>
             <p className="text-[#181d19]/60 font-inter text-sm tracking-wide">
-              © 2024 AgriAI Greenhouse. Nurturing digital growth.
+              © 2024 AgriNex AI Greenhouse. Nurturing digital growth.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-8">

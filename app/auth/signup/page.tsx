@@ -42,7 +42,9 @@ export default function SignupPage() {
       // Sync user to backend database
       console.log("send request to backend to register the user ");
       try {
-        const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
+        const baseUrl = (
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+        ).replace(/\/+$/, "");
         const response = await fetch(`${baseUrl}/auth/register`, {
           method: "POST",
           headers: {
@@ -53,9 +55,9 @@ export default function SignupPage() {
             email: userCredential.user.email,
           }),
         });
-        
+
         if (!response.ok) {
-           console.error("Backend returned error:", await response.text());
+          console.error("Backend returned error:", await response.text());
         }
       } catch (backendErr) {
         console.error("Backend database registration failed:", backendErr);
@@ -79,7 +81,9 @@ export default function SignupPage() {
 
       // Sync user to backend database
       try {
-        const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
+        const baseUrl = (
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+        ).replace(/\/+$/, "");
         const response = await fetch(`${baseUrl}/auth/register`, {
           method: "POST",
           headers: {
@@ -90,9 +94,9 @@ export default function SignupPage() {
             email: userCredential.user.email,
           }),
         });
-        
+
         if (!response.ok) {
-           console.error("Backend returned error:", await response.text());
+          console.error("Backend returned error:", await response.text());
         }
       } catch (backendErr) {
         console.error("Backend database registration failed:", backendErr);
@@ -112,7 +116,7 @@ export default function SignupPage() {
         <section className="hidden lg:flex relative overflow-hidden flex-col justify-between p-16 bg-surface-container-low">
           <div className="relative z-10">
             <div className="text-2xl font-headline font-extrabold text-primary tracking-tight mb-12">
-              AgriAI
+              AgriNex AI
             </div>
             <h1 className="font-headline text-5xl font-extrabold text-on-surface tracking-tighter leading-tight max-w-md">
               Cultivating the future with{" "}
@@ -156,7 +160,7 @@ export default function SignupPage() {
           <div className="w-full max-w-md">
             <div className="lg:hidden text-center mb-8">
               <div className="text-2xl font-headline font-extrabold text-primary tracking-tight">
-                AgriAI
+                AgriNex AI
               </div>
             </div>
             <div className="mb-10 text-center lg:text-left">
@@ -324,7 +328,9 @@ export default function SignupPage() {
       </main>
       <footer className="w-full py-12 px-8 bg-surface-container-low">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
-          <div className="font-headline font-bold text-on-surface">AgriAI</div>
+          <div className="font-headline font-bold text-on-surface">
+            AgriNex AI
+          </div>
           <div className="flex flex-wrap justify-center gap-8">
             <Link
               className="text-on-surface-variant text-sm font-inter hover:text-primary transition-colors"
@@ -352,7 +358,7 @@ export default function SignupPage() {
             </Link>
           </div>
           <div className="text-on-surface-variant text-sm font-inter">
-            © 2024 AgriAI Greenhouse. Nurturing digital growth.
+            © 2024 AgriNex AI Greenhouse. Nurturing digital growth.
           </div>
         </div>
       </footer>
