@@ -3,7 +3,18 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { PlayCircle, Leaf, Microscope, ArrowRight, Brain, Droplet, Users, MessageSquare, Star, Globe } from 'lucide-react';
+import {
+  PlayCircle,
+  Leaf,
+  Microscope,
+  ArrowRight,
+  Brain,
+  Droplet,
+  Users,
+  MessageSquare,
+  Star,
+  Globe,
+} from "lucide-react";
 
 export default function Home() {
   const { user, loading } = useCurrentUser();

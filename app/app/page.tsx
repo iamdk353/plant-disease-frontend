@@ -58,7 +58,7 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center text-primary">
-                    <Leaf className="h-10 w-10" />
+                    <Leaf className="h-5 w-5" />
                   </div>
                   <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
                     <Camera className="h-5 w-5" />
@@ -82,7 +82,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-6 relative z-10">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-secondary-container/30 flex items-center justify-center text-secondary">
-                      <Leaf className="h-10 w-10" />
+                      <Leaf className="h-5 w-5" />
                     </div>
                     <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
                       <MapPin className="h-5 w-5" />
