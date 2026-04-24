@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { Leaf } from "lucide-react";
 
 const Nav = () => {
   const pathname = usePathname();
@@ -18,9 +19,7 @@ const Nav = () => {
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-sm shadow-[#181d19]/5 flex justify-between items-center px-6 py-4">
       <Link href="/app" className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-primary text-3xl">
-          potted_plant
-        </span>
+        <Leaf className="w-8 h-8 text-primary" />
         <span className="text-2xl font-bold text-primary font-headline tracking-tight">
           AgriNex AI
         </span>

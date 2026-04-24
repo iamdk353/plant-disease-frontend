@@ -4,6 +4,27 @@ import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Link from "next/link";
 import Nav from "../../components/Nav";
+import {
+  AlertTriangle,
+  Brain,
+  Camera,
+  Cloud,
+  Droplets,
+  ExternalLink,
+  Home,
+  Leaf,
+  LineChart,
+  Loader2,
+  Mountain,
+  Pill,
+  Search,
+  ShieldCheck,
+  ShoppingCart,
+  Thermometer,
+  User,
+  Wind,
+  X,
+} from "lucide-react";
 
 interface WeatherData {
   city: string;
@@ -172,7 +193,10 @@ export default function AdvisoryPage() {
     setSelectedReport(null);
 
     // If activity already includes a report object, render it directly
-    if (activity.report && (activity.report.report || activity.report.report_text)) {
+    if (
+      activity.report &&
+      (activity.report.report || activity.report.report_text)
+    ) {
       setSelectedReport(activity.report);
       return;
     }
@@ -181,7 +205,9 @@ export default function AdvisoryPage() {
     try {
       setIsFetchingReport(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const resp = await fetch(`${apiUrl}/api/ai/report?prediction_id=${activity.id}`);
+      const resp = await fetch(
+        `${apiUrl}/api/ai/report?prediction_id=${activity.id}`,
+      );
       if (resp.ok) {
         const data = await resp.json();
         if (data && (data.report || data.report_text)) {
@@ -443,36 +469,28 @@ export default function AdvisoryPage() {
           <section className="bg-surface-container-low rounded-full px-5 py-2 shadow-sm border border-outline-variant/30 inline-flex self-start md:self-auto ">
             <div className="flex items-center justify-between gap-5">
               <div className="flex items-center gap-2" title="Temperature">
-                <span className="material-symbols-outlined text-primary text-xl">
-                  thermostat
-                </span>
+                <Thermometer className="h-5 w-5 text-primary" />
                 <span className="font-bold text-sm text-on-surface">
                   {weatherData.loading ? "--" : `${weatherData.temp}°C`}
                 </span>
               </div>
               <div className="h-4 w-[1px] bg-outline-variant/40"></div>
               <div className="flex items-center gap-2" title="Humidity">
-                <span className="material-symbols-outlined text-primary text-xl">
-                  humidity_mid
-                </span>
+                <Droplets className="h-5 w-5 text-primary" />
                 <span className="font-bold text-sm text-on-surface">
                   {weatherData.loading ? "--" : `${weatherData.humidity}%`}
                 </span>
               </div>
               <div className="h-4 w-[1px] bg-outline-variant/40"></div>
               <div className="flex items-center gap-2" title="Cloud Cover">
-                <span className="material-symbols-outlined text-primary text-xl">
-                  cloud
-                </span>
+                <Cloud className="h-5 w-5 text-primary" />
                 <span className="font-bold text-sm text-on-surface">
                   {weatherData.loading ? "--" : `${weatherData.clouds}%`}
                 </span>
               </div>
               <div className="h-4 w-[1px] bg-outline-variant/40"></div>
               <div className="flex items-center gap-2" title="Wind Speed">
-                <span className="material-symbols-outlined text-primary text-xl">
-                  air
-                </span>
+                <Wind className="h-5 w-5 text-primary" />
                 <span className="font-bold text-sm text-on-surface">
                   {weatherData.loading ? "--" : `${weatherData.windSpeed}m/s`}
                 </span>
@@ -493,13 +511,19 @@ export default function AdvisoryPage() {
                     : "bg-outline-variant/10 border-outline-variant/50"
                 } inline-flex`}
               >
-                <span
-                  className={`material-symbols-outlined text-lg ${
-                    alert.severity === "High" ? "text-error" : "text-primary"
-                  }`}
-                >
-                  {alert.type === "Weather" ? "thermostat" : "fmd_bad"}
-                </span>
+                {alert.type === "Weather" ? (
+                  <Thermometer
+                    className={`h-5 w-5 ${
+                      alert.severity === "High" ? "text-error" : "text-primary"
+                    }`}
+                  />
+                ) : (
+                  <AlertTriangle
+                    className={`h-5 w-5 ${
+                      alert.severity === "High" ? "text-error" : "text-primary"
+                    }`}
+                  />
+                )}
                 <p className="text-xs md:text-sm font-bold text-on-surface">
                   {alert.message}
                 </p>
@@ -609,16 +633,12 @@ export default function AdvisoryPage() {
                   >
                     {isGeneratingPlan ? (
                       <>
-                        <span className="material-symbols-outlined animate-spin text-xl">
-                          psychology
-                        </span>
+                        <Loader2 className="h-5 w-5 animate-spin" />
                         Automatically Analyzing Environment...
                       </>
                     ) : (
                       <>
-                        <span className="material-symbols-outlined text-xl">
-                          view_timeline
-                        </span>
+                        <LineChart className="h-5 w-5" />
                         Generate Strategy
                       </>
                     )}
@@ -640,7 +660,7 @@ export default function AdvisoryPage() {
                           </p>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
-                          <span className="material-symbols-outlined">terrain</span>
+                          <Mountain className="h-5 w-5" />
                         </div>
                       </div>
                     </div>
@@ -651,15 +671,15 @@ export default function AdvisoryPage() {
                         disabled={isGeneratingPlan}
                         className="px-4 py-2 rounded-full bg-surface-container-high border border-outline-variant text-sm font-bold hover:bg-surface-container-lowest transition disabled:opacity-60"
                       >
-                        {isGeneratingPlan ? "Regenerating..." : "Regenerate Plan"}
+                        {isGeneratingPlan
+                          ? "Regenerating..."
+                          : "Regenerate Plan"}
                       </button>
                     </div>
                   </div>
 
                   <h3 className="font-bold text-lg mb-5 text-on-surface flex items-center gap-2 font-headline">
-                    <span className="material-symbols-outlined text-primary">
-                      verified
-                    </span>
+                    <ShieldCheck className="h-5 w-5 text-primary" />
                     Recommended Planting Schedule
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -717,7 +737,7 @@ export default function AdvisoryPage() {
                     setSelectedReport(null);
                   }}
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
@@ -737,14 +757,15 @@ export default function AdvisoryPage() {
                   {!isFetchingReport && !selectedReport && (
                     <>
                       <p className="text-sm text-on-surface-variant mb-3 text-center">
-                        No AI report found for this activity. Press Generate to create it.
+                        No AI report found for this activity. Press Generate to
+                        create it.
                       </p>
                       <button
                         onClick={() => generateReport(selectedActivity)}
                         aria-label="Generate"
                         className="w-full py-4 rounded-2xl font-bold bg-primary text-on-primary shadow-md shadow-primary/20 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                       >
-                        <span className="material-symbols-outlined text-xl">psychology</span>
+                        <Brain className="h-5 w-5" />
                         Generate
                       </button>
                     </>
@@ -754,9 +775,7 @@ export default function AdvisoryPage() {
                   {isFetchingReport && (
                     <div className="mt-4 pt-6 border-t border-outline-variant/30 flex flex-col gap-4">
                       <div className="flex items-center gap-2 text-primary font-bold animate-pulse">
-                        <span className="material-symbols-outlined animate-spin text-xl">
-                          psychology
-                        </span>
+                        <Loader2 className="h-5 w-5 animate-spin" />
                         Generating AI Analysis... (may take ~10s)
                       </div>
                       <div className="h-4 w-full bg-surface-variant/50 animate-pulse rounded-full"></div>
@@ -772,9 +791,7 @@ export default function AdvisoryPage() {
                       <>
                         <div className="pt-6 border-t border-outline-variant/30">
                           <h3 className="font-bold text-xl mb-3 font-headline text-primary flex items-center gap-2">
-                            <span className="material-symbols-outlined">
-                              verified
-                            </span>
+                            <ShieldCheck className="h-5 w-5" />
                             AI Expert Analysis
                           </h3>
                           <p className="text-sm text-on-surface-variant mb-5 leading-relaxed">
@@ -784,18 +801,14 @@ export default function AdvisoryPage() {
                           {selectedReport.expert_analysis && (
                             <div className="bg-primary/5 p-4 rounded-xl text-sm mb-5 border border-primary/10">
                               <p className="flex items-start gap-2">
-                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
-                                  find_in_page
-                                </span>
+                                <Search className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                                 <span>
                                   <strong>Cause:</strong>{" "}
                                   {selectedReport.expert_analysis.cause}
                                 </span>
                               </p>
                               <p className="mt-3 flex items-start gap-2">
-                                <span className="material-symbols-outlined text-base mt-0.5 text-primary shrink-0">
-                                  thermostat
-                                </span>
+                                <Thermometer className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                                 <span>
                                   <strong>Weather Impact:</strong>{" "}
                                   {
@@ -811,9 +824,7 @@ export default function AdvisoryPage() {
                             selectedReport.report.treatments.length > 0 && (
                               <div className="mb-5">
                                 <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
-                                  <span className="material-symbols-outlined text-base">
-                                    medication
-                                  </span>
+                                  <Pill className="h-4 w-4" />
                                   Step-by-Step Treatment
                                 </h4>
                                 <div className="space-y-3">
@@ -847,9 +858,7 @@ export default function AdvisoryPage() {
                             selectedReport.product_links.length > 0 && (
                               <div>
                                 <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-on-surface">
-                                  <span className="material-symbols-outlined text-base">
-                                    shopping_cart
-                                  </span>
+                                  <ShoppingCart className="h-4 w-4" />
                                   Recommended Products
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
@@ -867,9 +876,7 @@ export default function AdvisoryPage() {
                                           className="bg-surface-variant hover:bg-primary hover:text-on-primary text-on-surface text-xs font-bold px-3 py-2 rounded-full transition-colors flex items-center gap-1"
                                         >
                                           {domain}{" "}
-                                          <span className="material-symbols-outlined text-[10px]">
-                                            open_in_new
-                                          </span>
+                                          <ExternalLink className="h-3 w-3" />
                                         </a>
                                       );
                                     },
@@ -894,7 +901,7 @@ export default function AdvisoryPage() {
             href="/app"
             className="flex flex-col items-center justify-center text-on-surface/60 p-2 hover:text-primary transition-all"
           >
-            <span className="material-symbols-outlined mb-1">home</span>
+            <Home className="mb-1 h-5 w-5" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest">
               Home
             </span>
@@ -903,7 +910,7 @@ export default function AdvisoryPage() {
             href="/app/diagnoise"
             className="flex flex-col items-center justify-center text-on-surface/60 p-2 hover:text-primary transition-all"
           >
-            <span className="material-symbols-outlined mb-1">camera_alt</span>
+            <Camera className="mb-1 h-5 w-5" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest">
               Detect
             </span>
@@ -912,13 +919,13 @@ export default function AdvisoryPage() {
             href="/app/adivise"
             className="flex flex-col items-center justify-center bg-gradient-to-br from-[#486808] to-[#85A947] text-white rounded-full p-4 scale-110 -translate-y-2 shadow-lg active:scale-90 transition-all duration-300 ease-out"
           >
-            <span className="material-symbols-outlined">grass</span>
+            <Leaf className="h-5 w-5" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-0.5">
               Advisory
             </span>
           </Link>
           <button className="flex flex-col items-center justify-center text-on-surface/60 p-2 hover:text-primary transition-all">
-            <span className="material-symbols-outlined mb-1">person</span>
+            <User className="mb-1 h-5 w-5" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest">
               Profile
             </span>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { PlayCircle, Leaf, Microscope, ArrowRight, Brain, Droplet, Users, MessageSquare, Star, Globe } from 'lucide-react';
 
 export default function Home() {
   const { user, loading } = useCurrentUser();
@@ -82,12 +83,7 @@ export default function Home() {
                   Start Your Free Trial
                 </button>
                 <button className="flex items-center justify-center gap-2 px-8 py-5 bg-surface-container-low text-primary text-xl font-bold rounded-full hover:bg-surface-container-high transition-all">
-                  <span
-                    className="material-symbols-outlined"
-                    data-icon="play_circle"
-                  >
-                    play_circle
-                  </span>
+                  <PlayCircle className="w-6 h-6" />
                   Watch Demo
                 </button>
               </div>
@@ -113,12 +109,7 @@ export default function Home() {
                 />
                 <div className="absolute bottom-6 left-6 right-6 p-6 glass-nav bg-white/60 rounded-lg flex items-center gap-4">
                   <div className="p-3 bg-primary rounded-full text-on-primary">
-                    <span
-                      className="material-symbols-outlined"
-                      data-icon="energy_savings_leaf"
-                    >
-                      energy_savings_leaf
-                    </span>
+                    <Leaf className="w-6 h-6" />
                   </div>
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
@@ -152,12 +143,7 @@ export default function Home() {
               <div className="md:col-span-2 bg-surface-container-lowest p-10 rounded-lg flex flex-col md:flex-row gap-10 items-center soft-shadow group">
                 <div className="flex-1 space-y-6">
                   <div className="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <span
-                      className="material-symbols-outlined text-4xl"
-                      data-icon="biotech"
-                    >
-                      biotech
-                    </span>
+                    <Microscope className="w-10 h-10" />
                   </div>
                   <h3 className="text-3xl font-headline font-bold text-on-surface">
                     ML Disease Detection
@@ -171,12 +157,7 @@ export default function Home() {
                     href="#"
                   >
                     Learn more
-                    <span
-                      className="material-symbols-outlined"
-                      data-icon="arrow_forward"
-                    >
-                      arrow_forward
-                    </span>
+                    <ArrowRight className="h-5 w-5" />
                   </a>
                 </div>
                 <div className="flex-1">
@@ -195,12 +176,7 @@ export default function Home() {
               >
                 <div className="space-y-6">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    <span
-                      className="material-symbols-outlined text-4xl"
-                      data-icon="psychology"
-                    >
-                      psychology
-                    </span>
+                    <Brain className="h-10 w-10" />
                   </div>
                   <h3 className="text-3xl font-headline font-bold">
                     Personalized Crop Advisory
@@ -217,12 +193,7 @@ export default function Home() {
               {/* Feature Card 3 */}
               <div className="bg-surface-container-lowest p-10 rounded-lg space-y-6 soft-shadow border-t-4 border-tertiary">
                 <div className="w-16 h-16 bg-tertiary/10 rounded-full flex items-center justify-center text-tertiary">
-                  <span
-                    className="material-symbols-outlined text-4xl"
-                    data-icon="water_drop"
-                  >
-                    water_drop
-                  </span>
+                  <Droplet className="h-10 w-10" />
                 </div>
                 <h3 className="text-2xl font-headline font-bold text-on-surface">
                   Smart Irrigation
@@ -247,12 +218,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="hidden md:block">
-                  <span
-                    className="material-symbols-outlined text-[120px] text-on-secondary-container/10 absolute -right-4 -bottom-4"
-                    data-icon="groups"
-                  >
-                    groups
-                  </span>
+                  <Users className="absolute -right-4 -bottom-4 h-[120px] w-[120px] text-on-secondary-container/10" />
                 </div>
               </div>
             </div>
@@ -262,12 +228,7 @@ export default function Home() {
         <section className="py-24 max-w-7xl mx-auto px-8">
           <div className="bg-surface-container-lowest rounded-xl p-12 md:p-20 relative overflow-hidden soft-shadow">
             <div className="absolute top-0 right-0 p-12 opacity-5">
-              <span
-                className="material-symbols-outlined text-9xl"
-                data-icon="format_quote"
-              >
-                format_quote
-              </span>
+              <MessageSquare className="h-24 w-24" />
             </div>
             <div className="relative z-10 flex flex-col md:flex-row gap-12 items-center">
               <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0">
@@ -280,41 +241,11 @@ export default function Home() {
               </div>
               <div className="space-y-6">
                 <div className="flex gap-1 text-primary">
-                  <span
-                    className="material-symbols-outlined"
-                    data-icon="star"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    star
-                  </span>
-                  <span
-                    className="material-symbols-outlined"
-                    data-icon="star"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    star
-                  </span>
-                  <span
-                    className="material-symbols-outlined"
-                    data-icon="star"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    star
-                  </span>
-                  <span
-                    className="material-symbols-outlined"
-                    data-icon="star"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    star
-                  </span>
-                  <span
-                    className="material-symbols-outlined"
-                    data-icon="star"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    star
-                  </span>
+                  <Star className="w-5 h-5" />
+                  <Star className="w-5 h-5" />
+                  <Star className="w-5 h-5" />
+                  <Star className="w-5 h-5" />
+                  <Star className="w-5 h-5" />
                 </div>
                 <p className="text-2xl md:text-4xl font-headline font-medium text-on-surface leading-tight italic">
                   &quot;AgriNex AI saved my tomato crop this season. The disease
@@ -393,14 +324,10 @@ export default function Home() {
           </div>
           <div className="flex gap-4">
             <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container hover:text-primary transition-all cursor-pointer">
-              <span className="material-symbols-outlined" data-icon="language">
-                language
-              </span>
+              <Globe className="h-5 w-5" />
             </div>
             <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container hover:text-primary transition-all cursor-pointer">
-              <span className="material-symbols-outlined" data-icon="eco">
-                eco
-              </span>
+              <Leaf className="w-5 h-5" />
             </div>
           </div>
         </div>

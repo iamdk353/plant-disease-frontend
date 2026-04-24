@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { Brain, Camera, Image, Leaf, Upload, X } from "lucide-react";
 
 export default function DiagnosePage() {
   const { user, loading } = useCurrentUser();
@@ -254,13 +255,13 @@ export default function DiagnosePage() {
               className="bg-black/50 text-white w-12 h-12 rounded-full flex justify-center items-center hover:bg-black/80 backdrop-blur-md transition"
               title="Upload Crop"
             >
-              <span className="material-symbols-outlined">upload</span>
+              <Upload className="h-5 w-5" />
             </button>
             <button
               onClick={closeCamera}
               className="bg-black/50 text-white w-12 h-12 rounded-full flex justify-center items-center hover:bg-black/80 backdrop-blur-md transition"
             >
-              <span className="material-symbols-outlined">close</span>
+              <X className="h-5 w-5" />
             </button>
           </div>
           <div className="absolute top-6 left-6 z-10">
@@ -273,9 +274,7 @@ export default function DiagnosePage() {
               onClick={capturePhoto}
               className="bg-primary text-white w-20 h-20 rounded-full border-[6px] border-white/60 shadow-2xl flex items-center justify-center active:scale-95 transition-transform"
             >
-              <span className="material-symbols-outlined text-4xl">
-                photo_camera
-              </span>
+              <Camera className="h-10 w-10" />
             </button>
           </div>
         </div>
@@ -287,13 +286,13 @@ export default function DiagnosePage() {
               className="bg-surface-container-high text-on-surface w-12 h-12 rounded-full flex justify-center items-center hover:bg-surface-container-highest transition"
               title="Upload Different Crop"
             >
-              <span className="material-symbols-outlined">upload</span>
+              <Upload className="h-5 w-5" />
             </button>
             <button
               onClick={closeCamera}
               className="bg-surface-container-high text-on-surface w-12 h-12 rounded-full flex justify-center items-center hover:bg-surface-container-highest transition"
             >
-              <span className="material-symbols-outlined">close</span>
+              <X className="h-5 w-5" />
             </button>
           </div>
           <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-6 text-center tracking-tight shrink-0 mt-16 sm:mt-0">
@@ -308,9 +307,7 @@ export default function DiagnosePage() {
                 style={{ objectPosition: "center" }}
               />
             ) : (
-              <span className="material-symbols-outlined text-5xl text-on-surface-variant/40">
-                image
-              </span>
+              <Image className="h-12 w-12 text-on-surface-variant/40" />
             )}
             {isAnalyzing && (
               <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-[scan_2s_ease-in-out_infinite] pointer-events-none" />
@@ -371,9 +368,7 @@ export default function DiagnosePage() {
                   onClick={() => router.push("/app/adivise")}
                   className="w-full py-3 rounded-full font-bold bg-primary text-on-primary shadow-md hover:shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-xl">
-                    grass
-                  </span>
+                  <Leaf className="h-5 w-5" />
                   View in Advisory
                 </button>
               </div>
@@ -405,11 +400,7 @@ export default function DiagnosePage() {
                 className="flex-1 py-4 rounded-full font-bold signature-gradient text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <span>{isAnalyzing ? "Processing..." : "Run Diagnostic"}</span>
-                {!isAnalyzing && (
-                  <span className="material-symbols-outlined text-xl">
-                    psychology
-                  </span>
-                )}
+                {!isAnalyzing && <Brain className="h-5 w-5" />}
               </button>
             )}
           </div>

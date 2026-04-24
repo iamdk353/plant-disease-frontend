@@ -6,6 +6,24 @@ import Nav from "@/app/components/Nav";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import {
+  AtSign,
+  Award,
+  Brain,
+  Calendar,
+  Camera,
+  Droplet,
+  Home,
+  LifeBuoy,
+  LogOut,
+  MapPin,
+  Mountain,
+  Pencil,
+  Phone,
+  Leaf,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 
 export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
@@ -105,29 +123,22 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-4 text-on-surface-variant font-medium">
                 <span className="flex items-center gap-1 transition-all">
-                  <span className="material-symbols-outlined text-lg">
-                    location_on
-                  </span>{" "}
-                  {location}
+                  <MapPin className="h-[18px] w-[18px]" /> {location}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-lg">
-                    calendar_today
-                  </span>{" "}
-                  15+ Years Exp.
+                  <Calendar className="h-[18px] w-[18px]" /> 15+ Years Exp.
                 </span>
               </div>
             </div>
             <div className="flex flex-wrap gap-3 pb-4">
               <button className="bg-gradient-to-br from-[#486808] to-[#85a947] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95 transition-transform">
-                <span className="material-symbols-outlined">edit</span> Edit
-                Profile
+                <Pencil className="h-5 w-5" /> Edit Profile
               </button>
               <button
                 onClick={handleLogout}
                 className="bg-surface-container-high text-on-surface-variant px-8 py-3 rounded-full font-bold border border-outline-variant/30 flex items-center gap-2 active:scale-95 transition-transform hover:bg-error/10 hover:text-error hover:border-error/20"
               >
-                <span className="material-symbols-outlined">logout</span> Logout
+                <LogOut className="h-5 w-5" /> Logout
               </button>
             </div>
           </div>
@@ -173,9 +184,7 @@ export default function ProfilePage() {
                   Soil type
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-tertiary">
-                    landscape
-                  </span>
+                  <Mountain className="h-5 w-5 text-tertiary" />
                   <span className="text-xl font-bold text-on-surface">
                     Loamy Clay
                   </span>
@@ -185,9 +194,7 @@ export default function ProfilePage() {
 
             <div className="mt-12 p-6 rounded-lg bg-surface-container-low border-l-4 border-primary">
               <h3 className="font-bold mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">
-                  psychology
-                </span>
+                <Brain className="h-5 w-5 text-primary" />
                 AI Seasonal Tip
               </h3>
               <p className="text-on-surface-variant leading-relaxed">
@@ -206,12 +213,7 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div className="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-lg shadow-sm">
                 <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    verified
-                  </span>
+                  <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="font-bold text-on-surface">Organic Certified</p>
@@ -222,12 +224,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-lg shadow-sm">
                 <div className="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    workspace_premium
-                  </span>
+                  <Award className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="font-bold text-on-surface">Top Yield 2024</p>
@@ -238,7 +235,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-lg shadow-sm opacity-60">
                 <div className="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
-                  <span className="material-symbols-outlined">water_drop</span>
+                  <Droplet className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="font-bold text-on-surface">Water Saver</p>
@@ -254,7 +251,7 @@ export default function ProfilePage() {
           <section className="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
             <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center gap-4">
               <div className="p-3 bg-primary/10 rounded-full text-primary">
-                <span className="material-symbols-outlined">call</span>
+                <Phone className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
@@ -265,9 +262,7 @@ export default function ProfilePage() {
             </div>
             <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center gap-4">
               <div className="p-3 bg-primary/10 rounded-full text-primary">
-                <span className="material-symbols-outlined">
-                  alternate_email
-                </span>
+                <AtSign className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
@@ -279,7 +274,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="bg-primary p-6 rounded-xl shadow-lg flex items-center justify-center gap-3 text-white cursor-pointer hover:bg-primary/90 transition-colors">
-              <span className="material-symbols-outlined">support_agent</span>
+              <LifeBuoy className="h-5 w-5" />
               <span className="font-bold font-headline">Contact Support</span>
             </div>
           </section>
@@ -293,7 +288,7 @@ export default function ProfilePage() {
             className="flex flex-col items-center justify-center text-on-surface/60 p-2 hover:text-primary active:scale-90 transition-all duration-300 ease-out"
             href="/app"
           >
-            <span className="material-symbols-outlined">home</span>
+            <Home className="h-5 w-5" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
               Home
             </span>
@@ -302,7 +297,7 @@ export default function ProfilePage() {
             className="flex flex-col items-center justify-center text-on-surface/60 p-2 hover:text-primary active:scale-90 transition-all duration-300 ease-out"
             href="/app/diagnoise"
           >
-            <span className="material-symbols-outlined">camera_alt</span>
+            <Camera className="h-5 w-5" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
               Detect
             </span>
@@ -311,7 +306,7 @@ export default function ProfilePage() {
             className="flex flex-col items-center justify-center text-on-surface/60 p-2 hover:text-primary active:scale-90 transition-all duration-300 ease-out"
             href="/app/adivise"
           >
-            <span className="material-symbols-outlined">grass</span>
+            <Leaf className="h-5 w-5" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
               Advisory
             </span>
@@ -320,12 +315,7 @@ export default function ProfilePage() {
             className="flex flex-col items-center justify-center bg-gradient-to-br from-[#486808] to-[#85A947] text-white rounded-full p-4 scale-110 -translate-y-2 shadow-lg active:scale-90 transition-all duration-300 ease-out"
             href="/app/profile"
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              person
-            </span>
+            <User className="h-5 w-5 fill-current" />
             <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
               Profile
             </span>

@@ -7,6 +7,7 @@ import Link from "next/link";
 import Nav from "../components/Nav";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import RecentActivity from "../components/RecentActivity";
+import { Camera, Home, Leaf, MapPin, User } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, loading } = useCurrentUser();
@@ -57,14 +58,10 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-4xl">
-                      eco
-                    </span>
+                    <Leaf className="h-10 w-10" />
                   </div>
                   <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-                    <span className="material-symbols-outlined">
-                      photo_camera
-                    </span>
+                    <Camera className="h-5 w-5" />
                   </div>
                 </div>
                 <div>
@@ -85,14 +82,10 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-6 relative z-10">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-secondary-container/30 flex items-center justify-center text-secondary">
-                      <span className="material-symbols-outlined text-4xl">
-                        potted_plant
-                      </span>
+                      <Leaf className="h-10 w-10" />
                     </div>
                     <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-                      <span className="material-symbols-outlined">
-                        location_on
-                      </span>
+                      <MapPin className="h-5 w-5" />
                     </div>
                   </div>
                   <div>
@@ -117,18 +110,13 @@ export default function DashboardPage() {
           className="flex flex-col items-center justify-center bg-gradient-to-br from-[#486808] to-[#85A947] text-white rounded-full p-4 scale-110 -translate-y-2 shadow-lg transition-all duration-300 ease-out"
           href="#"
         >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            home
-          </span>
+          <Home className="h-5 w-5 fill-current" />
         </a>
         <button
           onClick={() => router.push("/app/diagnoise")}
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
         >
-          <span className="material-symbols-outlined">camera_alt</span>
+          <Camera className="h-5 w-5" />
           <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
             Detect
           </span>
@@ -137,7 +125,7 @@ export default function DashboardPage() {
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
           href="/app/adivise"
         >
-          <span className="material-symbols-outlined">grass</span>
+          <Leaf className="h-5 w-5" />
           <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
             Advisory feew
           </span>
@@ -146,7 +134,7 @@ export default function DashboardPage() {
           className="flex flex-col items-center justify-center text-on-surface/60 p-2 active:scale-90 transition-all"
           href="#"
         >
-          <span className="material-symbols-outlined">person</span>
+          <User className="h-5 w-5" />
           <span className="font-body text-[10px] font-bold uppercase tracking-widest mt-1">
             Profile
           </span>

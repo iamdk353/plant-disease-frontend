@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { ChevronRight } from "lucide-react";
 
 interface Activity {
   id: string;
@@ -25,7 +26,7 @@ const RecentActivity = () => {
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`,
         );
         if (!response.ok) throw new Error("Failed to fetch activities");
         const data = await response.json();
@@ -33,9 +34,10 @@ const RecentActivity = () => {
           data
             .sort(
               (a: Activity, b: Activity) =>
-                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime(),
             )
-            .slice(0, 3)
+            .slice(0, 3),
         );
       } catch (err) {
         console.error(err);
@@ -98,12 +100,15 @@ const RecentActivity = () => {
                       </span>
                     )}
                     <span className="text-xs text-on-surface-variant font-medium truncate">
-                      {new Date(activity.created_at).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      })}
+                      {new Date(activity.created_at).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
                     </span>
                   </div>
                   <h4 className="font-bold text-lg text-on-surface truncate capitalize">
@@ -113,9 +118,7 @@ const RecentActivity = () => {
                     Accuracy: {(topResult.confidence * 100).toFixed(1)}%
                   </p>
                 </div>
-                <span className="material-symbols-outlined text-on-surface-variant opacity-40 group-hover:opacity-100 transition-opacity">
-                  chevron_right
-                </span>
+                <ChevronRight className="w-5 h-5 text-on-surface-variant opacity-40 group-hover:opacity-100 transition-opacity" />
               </Link>
             );
           })

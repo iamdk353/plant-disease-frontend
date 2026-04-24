@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Link from "next/link";
+import { Calendar } from "lucide-react";
 
 export default function HistoryProfilePage() {
   const { user, loading } = useCurrentUser();
@@ -64,9 +65,7 @@ export default function HistoryProfilePage() {
                   </span>
                 </div>
                 <div className="mt-4 flex items-center gap-2 text-primary font-semibold text-sm">
-                  <span className="material-symbols-outlined text-base">
-                    calendar_today
-                  </span>
+                  <Calendar className="h-4 w-4" />
                   Oct 12, 2023
                 </div>
               </div>
@@ -96,9 +95,7 @@ export default function HistoryProfilePage() {
                   </span>
                 </div>
                 <div className="mt-4 flex items-center gap-2 text-primary font-semibold text-sm">
-                  <span className="material-symbols-outlined text-base">
-                    calendar_today
-                  </span>
+                  <Calendar className="h-4 w-4" />
                   Oct 08, 2023
                 </div>
               </div>
@@ -128,9 +125,7 @@ export default function HistoryProfilePage() {
                   </span>
                 </div>
                 <div className="mt-4 flex items-center gap-2 text-primary font-semibold text-sm">
-                  <span className="material-symbols-outlined text-base">
-                    calendar_today
-                  </span>
+                  <Calendar className="h-4 w-4" />
                   Sep 29, 2023
                 </div>
               </div>

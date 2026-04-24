@@ -4,6 +4,7 @@ import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 import Nav from "@/app/components/Nav";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import gsap from "gsap";
+import { History } from "lucide-react";
 
 interface PredictionResult {
   rank: number;
@@ -143,9 +144,7 @@ export default function ActivitiesPage() {
         ) : activities.length === 0 ? (
           <div className="bg-surface-container-low border border-outline-variant/50 p-16 rounded-3xl text-center soft-shadow">
             <div className="w-20 h-20 bg-surface-variant rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-              <span className="material-symbols-outlined text-4xl text-outline text-primary">
-                history
-              </span>
+              <History className="h-10 w-10 text-primary" />
             </div>
             <h3 className="text-2xl font-bold text-on-surface mb-3 tracking-tight">
               No records found

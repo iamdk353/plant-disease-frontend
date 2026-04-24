@@ -10,6 +10,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { auth } from "../../../lib/firebase";
+import { Brain, User, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -130,12 +131,7 @@ export default function SignupPage() {
           <div className="relative z-10">
             <div className="inline-flex items-center gap-4 bg-surface-container-lowest p-6 rounded-xl shadow-sm border-0">
               <div className="h-12 w-12 rounded-full signature-gradient flex items-center justify-center text-on-primary">
-                <span
-                  className="material-symbols-outlined"
-                  data-icon="psychology"
-                >
-                  psychology
-                </span>
+                <Brain className="w-6 h-6" />
               </div>
               <div>
                 <div className="font-headline font-bold text-on-surface">
@@ -183,12 +179,7 @@ export default function SignupPage() {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
-                    <span
-                      className="material-symbols-outlined"
-                      data-icon="person"
-                    >
-                      person
-                    </span>
+                    <User className="w-5 h-5" />
                   </div>
                   <input
                     className="block w-full h-16 pl-14 pr-5 bg-surface-container-high border-0 rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant font-medium"
@@ -206,12 +197,7 @@ export default function SignupPage() {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
-                    <span
-                      className="material-symbols-outlined"
-                      data-icon="mail"
-                    >
-                      mail
-                    </span>
+                    <Mail className="w-5 h-5" />
                   </div>
                   <input
                     className="block w-full h-16 pl-14 pr-5 bg-surface-container-high border-0 rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant font-medium"
@@ -229,12 +215,7 @@ export default function SignupPage() {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
-                    <span
-                      className="material-symbols-outlined"
-                      data-icon="lock"
-                    >
-                      lock
-                    </span>
+                    <Lock className="w-5 h-5" />
                   </div>
                   <input
                     className="block w-full h-16 pl-14 pr-5 bg-surface-container-high border-0 rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant font-medium"
@@ -254,12 +235,7 @@ export default function SignupPage() {
                 >
                   {loading ? "Creating Account..." : "Create Account"}
                   {!loading && (
-                    <span
-                      className="material-symbols-outlined"
-                      data-icon="arrow_forward"
-                    >
-                      arrow_forward
-                    </span>
+                    <ArrowRight className="w-5 h-5" />
                   )}
                 </button>
               </div>
@@ -304,13 +280,7 @@ export default function SignupPage() {
             </div>
             <div className="mt-12 p-6 bg-surface-container-low rounded-xl border-0 flex items-start gap-4">
               <div className="text-primary mt-1">
-                <span
-                  className="material-symbols-outlined text-3xl"
-                  data-icon="verified_user"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  verified_user
-                </span>
+                <ShieldCheck className="w-8 h-8" />
               </div>
               <div>
                 <h4 className="font-headline font-bold text-on-surface">
