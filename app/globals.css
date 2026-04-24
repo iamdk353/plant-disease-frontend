@@ -63,6 +63,17 @@ html {
   scroll-behavior: smooth;
 }
 
+body {
+  top: 0 !important;
+}
+
+.goog-te-banner-frame.skiptranslate,
+.skiptranslate iframe,
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
 @layer utilities {
   .glass-nav {
     backdrop-filter: blur(20px);

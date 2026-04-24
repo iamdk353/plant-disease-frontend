@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Nav from "@/app/components/Nav";
@@ -14,6 +14,7 @@ import {
   Camera,
   Droplet,
   Home,
+  Languages,
   LifeBuoy,
   LogOut,
   MapPin,
@@ -25,9 +26,111 @@ import {
   User,
 } from "lucide-react";
 
+const GOOGLE_TRANSLATE_STORAGE_KEY = "agrinex-preferred-language";
+const GOOGLE_TRANSLATE_SCRIPT_ID = "google-translate-script";
+const GOOGLE_TRANSLATE_CONTAINER_ID = "google_translate_element";
+
+const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "kn", label: "Kannada" },
+  { value: "ta", label: "Tamil" },
+  { value: "te", label: "Telugu" },
+  { value: "ml", label: "Malayalam" },
+  { value: "hi", label: "Hindi" },
+] as const;
+
+type SupportedLanguage = (typeof LANGUAGE_OPTIONS)[number]["value"];
+
+const SUPPORTED_LANGUAGE_SET = new Set<SupportedLanguage>(
+  LANGUAGE_OPTIONS.map(({ value }) => value),
+);
+
+const INCLUDED_LANGUAGE_CODES = LANGUAGE_OPTIONS.filter(
+  ({ value }) => value !== "en",
+)
+  .map(({ value }) => value)
+  .join(",");
+
+interface GoogleTranslateElementOptions {
+  pageLanguage: string;
+  includedLanguages: string;
+  autoDisplay: boolean;
+  layout?: string;
+}
+
+interface GoogleTranslateElementConstructor {
+  new (options: GoogleTranslateElementOptions, elementId: string): unknown;
+  InlineLayout: {
+    SIMPLE: string;
+  };
+}
+
+declare global {
+  interface Window {
+    google?: {
+      translate?: {
+        TranslateElement?: GoogleTranslateElementConstructor;
+      };
+    };
+    googleTranslateElementInit?: () => void;
+  }
+}
+
+const isSupportedLanguage = (
+  value: string | null,
+): value is SupportedLanguage => {
+  if (!value) {
+    return false;
+  }
+
+  return SUPPORTED_LANGUAGE_SET.has(value as SupportedLanguage);
+};
+
+const waitForGoogleTranslateCombo = async (
+  attempts = 40,
+): Promise<HTMLSelectElement | null> => {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const combo = document.querySelector(".goog-te-combo");
+    if (combo instanceof HTMLSelectElement) {
+      return combo;
+    }
+
+    await new Promise((resolve) => window.setTimeout(resolve, 250));
+  }
+
+  return null;
+};
+
+const applyGoogleTranslateLanguage = async (
+  language: SupportedLanguage,
+): Promise<boolean> => {
+  const cookieValue = `/auto/${language}`;
+  document.cookie = `googtrans=${cookieValue}; path=/`;
+
+  const combo = await waitForGoogleTranslateCombo();
+  if (!combo) {
+    return false;
+  }
+
+  combo.value = language;
+
+  const changeEvent = document.createEvent("HTMLEvents");
+  changeEvent.initEvent("change", true, true);
+  combo.dispatchEvent(changeEvent);
+
+  return true;
+};
+
 export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<SupportedLanguage>("en");
+  const [hasLoadedLanguagePreference, setHasLoadedLanguagePreference] =
+    useState(false);
+  const [isTranslateReady, setIsTranslateReady] = useState(false);
+  const [isApplyingLanguage, setIsApplyingLanguage] = useState(false);
+  const [translateError, setTranslateError] = useState("");
 
   const handleLogout = async () => {
     try {
@@ -41,10 +144,119 @@ export default function ProfilePage() {
   const [location, setLocation] = useState<string>("Locating...");
 
   useEffect(() => {
+    const restorePreferenceTimer = window.setTimeout(() => {
+      const savedLanguage = window.localStorage.getItem(
+        GOOGLE_TRANSLATE_STORAGE_KEY,
+      );
+
+      if (isSupportedLanguage(savedLanguage)) {
+        setSelectedLanguage(savedLanguage);
+      }
+
+      setHasLoadedLanguagePreference(true);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(restorePreferenceTimer);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!loading && !user) {
       router.push("/");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!hasLoadedLanguagePreference) {
+      return;
+    }
+
+    window.localStorage.setItem(GOOGLE_TRANSLATE_STORAGE_KEY, selectedLanguage);
+  }, [hasLoadedLanguagePreference, selectedLanguage]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const mountGoogleTranslate = () => {
+      const TranslateElement = window.google?.translate?.TranslateElement;
+      if (!TranslateElement) {
+        return false;
+      }
+
+      const container = document.getElementById(GOOGLE_TRANSLATE_CONTAINER_ID);
+      if (!container) {
+        return false;
+      }
+
+      if (!container.childNodes.length) {
+        container.innerHTML = "";
+        new TranslateElement(
+          {
+            pageLanguage: "en",
+            includedLanguages: INCLUDED_LANGUAGE_CODES,
+            autoDisplay: false,
+            layout: TranslateElement.InlineLayout.SIMPLE,
+          },
+          GOOGLE_TRANSLATE_CONTAINER_ID,
+        );
+      }
+
+      if (!isCancelled) {
+        setIsTranslateReady(true);
+        setTranslateError("");
+      }
+
+      return true;
+    };
+
+    window.googleTranslateElementInit = () => {
+      mountGoogleTranslate();
+    };
+
+    if (mountGoogleTranslate()) {
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    const existingScript = document.getElementById(
+      GOOGLE_TRANSLATE_SCRIPT_ID,
+    ) as HTMLScriptElement | null;
+
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.id = GOOGLE_TRANSLATE_SCRIPT_ID;
+      script.src =
+        "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      script.async = true;
+      script.onerror = () => {
+        if (!isCancelled) {
+          setTranslateError("Google Translate could not be loaded.");
+        }
+      };
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedLanguagePreference || !isTranslateReady) {
+      return;
+    }
+
+    void applyGoogleTranslateLanguage(selectedLanguage).then((didApply) => {
+      if (!didApply) {
+        setTranslateError("Translation controls are still loading.");
+        return;
+      }
+
+      setTranslateError("");
+    });
+  }, [hasLoadedLanguagePreference, isTranslateReady, selectedLanguage]);
 
   useEffect(() => {
     const fetchLocation = async (lat: number, lon: number) => {
@@ -72,24 +284,50 @@ export default function ProfilePage() {
       }
     };
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchLocation(position.coords.latitude, position.coords.longitude);
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          setLocation("Location Access Denied");
-        },
-      );
-    } else {
-      setLocation("Location Unavailable");
+    if (!("geolocation" in navigator)) {
+      const unavailableTimer = window.setTimeout(() => {
+        setLocation("Location Unavailable");
+      }, 0);
+
+      return () => {
+        window.clearTimeout(unavailableTimer);
+      };
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        fetchLocation(position.coords.latitude, position.coords.longitude);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocation("Location Access Denied");
+      },
+    );
   }, []);
+
+  const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextLanguage = event.target.value as SupportedLanguage;
+
+    setSelectedLanguage(nextLanguage);
+    setIsApplyingLanguage(true);
+    setTranslateError("Applying language...");
+
+    window.localStorage.setItem(GOOGLE_TRANSLATE_STORAGE_KEY, nextLanguage);
+    document.cookie = `googtrans=/auto/${nextLanguage}; path=/`;
+
+    window.setTimeout(() => {
+      window.location.reload();
+    }, 150);
+  };
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body overflow-x-hidden">
       <Nav />
+      <div
+        id={GOOGLE_TRANSLATE_CONTAINER_ID}
+        aria-hidden="true"
+        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+      />
 
       <main className="max-w-7xl mx-auto px-6 pt-24">
         {/* Profile Header Section */}
@@ -130,16 +368,46 @@ export default function ProfilePage() {
                 </span>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3 pb-4">
-              <button className="bg-gradient-to-br from-[#486808] to-[#85a947] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95 transition-transform">
-                <Pencil className="h-5 w-5" /> Edit Profile
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-surface-container-high text-on-surface-variant px-8 py-3 rounded-full font-bold border border-outline-variant/30 flex items-center gap-2 active:scale-95 transition-transform hover:bg-error/10 hover:text-error hover:border-error/20"
-              >
-                <LogOut className="h-5 w-5" /> Logout
-              </button>
+            <div className="flex w-full flex-col gap-3 pb-4  md:w-[500px]">
+              <div className="flex flex-wrap gap-3">
+                <button className="bg-gradient-to-br from-[#486808] to-[#85a947] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95 transition-transform">
+                  <Pencil className="h-5 w-5" /> Edit Profile
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="bg-surface-container-high text-on-surface-variant px-8 py-3 rounded-full font-bold border border-outline-variant/30 flex items-center gap-2 active:scale-95 transition-transform  hover:text-error hover:bg-surface-container-high"
+                >
+                  <LogOut className="h-5 w-5" /> Logout
+                </button>
+              </div>
+
+              <div className="rounded-2xl border border-outline-variant/30 bg-surface/90 p-4 shadow-sm backdrop-blur-sm">
+                <label
+                  className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-language-select"
+                >
+                  <Languages className="h-4 w-4 text-primary" />
+                  App Language
+                </label>
+                <select
+                  id="profile-language-select"
+                  value={selectedLanguage}
+                  onChange={handleLanguageChange}
+                  disabled={!isTranslateReady || isApplyingLanguage}
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {LANGUAGE_OPTIONS.map((language) => (
+                    <option key={language.value} value={language.value}>
+                      {language.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-2 text-xs text-on-surface-variant">
+                  {translateError
+                    ? translateError
+                    : "Uses Google Translate and remembers your choice on this device. A quick refresh is used to apply the selected language reliably."}
+                </p>
+              </div>
             </div>
           </div>
         </header>
