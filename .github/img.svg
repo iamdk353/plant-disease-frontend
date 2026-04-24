@@ -1,0 +1,515 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="685px"
+  preserveAspectRatio="none" style="width:2248px;height:685px;background:#FFFFFF;" version="1.1"
+  viewBox="0 0 2248 685" width="2248px" zoomAndPan="magnify">
+  <title>Plant Disease Detection System Architecture (Updated)</title>
+  <defs />
+  <g>
+    <g class="title" data-source-line="1">
+      <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold"
+        lengthAdjust="spacing" textLength="440.2686" x="896.8657" y="22.9951">Plant Disease
+        Detection System Architecture (Updated)</text>
+    </g><!--cluster
+    Frontend (Next.js App)-->
+    <g class="cluster" data-entity="Frontend .Next.js App." data-source-line="5" data-uid="ent0003"
+      id="cluster_Frontend .Next.js App.">
+      <rect fill="none" height="203" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;"
+        width="536" x="7" y="143.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold"
+        lengthAdjust="spacing" textLength="181.0361" x="184.4819" y="158.792">Frontend (Next.js App)</text>
+    </g><!--cluster
+    Backend (FastAPI)-->
+    <g class="cluster" data-entity="Backend .FastAPI." data-source-line="12" data-uid="ent0008"
+      id="cluster_Backend .FastAPI.">
+      <rect fill="none" height="309" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;"
+        width="377" x="567" y="249.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold"
+        lengthAdjust="spacing" textLength="145.2227" x="682.8887" y="264.792">Backend (FastAPI)</text>
+    </g><!--cluster
+    ML Layer-->
+    <g class="cluster" data-entity="ML Layer" data-source-line="19" data-uid="ent0013"
+      id="cluster_ML Layer">
+      <rect fill="none" height="97" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;"
+        width="397" x="968" y="461.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold"
+        lengthAdjust="spacing" textLength="71.6201" x="1130.6899" y="476.792">ML Layer</text>
+    </g><!--cluster
+    AI Agents (LangChain)-->
+    <g class="cluster" data-entity="AI Agents .LangChain." data-source-line="24" data-uid="ent0016"
+      id="cluster_AI Agents .LangChain.">
+      <rect fill="none" height="97" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;"
+        width="703" x="1389" y="461.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold"
+        lengthAdjust="spacing" textLength="176.7432" x="1652.1284" y="476.792">AI Agents (LangChain)</text>
+    </g><!--cluster
+    External Services-->
+    <g class="cluster" data-entity="External Services" data-source-line="31" data-uid="ent0021"
+      id="cluster_External Services">
+      <rect fill="none" height="97" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;"
+        width="846" x="1396" y="582.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold"
+        lengthAdjust="spacing" textLength="137.3066" x="1750.3467" y="597.792">External Services</text>
+    </g><!--entity
+    Pages / Routes-->
+    <g class="entity" data-entity="Pages . Routes" data-source-line="6" data-uid="ent0004"
+      id="entity_Pages . Routes">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="143.9951" x="206" y="178.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="329.9951" y="183.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="327.9951" y="185.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="327.9951" y="189.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="103.9951" x="221" y="211.792">Pages / Routes</text>
+    </g><!--entity
+    UI Components-->
+    <g class="entity" data-entity="UI Components" data-source-line="7" data-uid="ent0005"
+      id="entity_UI Components">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="147.3994" x="23.5" y="178.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="150.8994" y="183.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="148.8994" y="185.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="148.8994" y="189.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="107.3994" x="38.5" y="211.792">UI Components</text>
+    </g><!--entity
+    Custom Hooks-->
+    <g class="entity" data-entity="Custom Hooks" data-source-line="8" data-uid="ent0006"
+      id="entity_Custom Hooks">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="141.1445" x="385.5" y="178.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="506.6445" y="183.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="504.6445" y="185.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="504.6445" y="189.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="101.1445" x="400.5" y="211.792">Custom Hooks</text>
+    </g><!--entity
+    Firebase Auth-->
+    <g class="entity" data-entity="Firebase Auth" data-source-line="9" data-uid="ent0007"
+      id="entity_Firebase Auth">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="136.9473" x="28.5" y="284.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="145.4473" y="289.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="143.4473" y="291.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="143.4473" y="295.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="96.9473" x="43.5" y="317.792">Firebase Auth</text>
+    </g><!--entity
+    API Gateway (/predict, /upload, /ai)-->
+    <g class="entity" data-entity="API Gateway ..predict. .upload. .ai." data-source-line="13"
+      data-uid="ent0009" id="entity_API Gateway ..predict. .upload. .ai.">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="285.1367" x="612.5" y="284.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="877.6367" y="289.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="875.6367" y="291.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="875.6367" y="295.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="245.1367" x="627.5" y="317.792">API Gateway (/predict, /upload, /ai)</text>
+    </g><!--entity
+    Inference Service-->
+    <g class="entity" data-entity="Inference Service" data-source-line="14" data-uid="ent0010"
+      id="entity_Inference Service">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="162.2881" x="583" y="390.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="725.2881" y="395.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="723.2881" y="397.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="723.2881" y="401.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="122.2881" x="598" y="423.792">Inference Service</text>
+    </g><!--entity
+    AI Orchestrator-->
+    <g class="entity" data-entity="AI Orchestrator" data-source-line="15" data-uid="ent0011"
+      id="entity_AI Orchestrator">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="147.0439" x="780.5" y="390.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="907.5439" y="395.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="905.5439" y="397.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="905.5439" y="401.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="107.0439" x="795.5" y="423.792">AI Orchestrator</text>
+    </g><!--entity
+    Database Layer-->
+    <g class="entity" data-entity="Database Layer" data-source-line="16" data-uid="ent0012"
+      id="entity_Database Layer">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="150.2842" x="683" y="496.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="813.2842" y="501.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="811.2842" y="503.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="811.2842" y="507.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="110.2842" x="698" y="529.792">Database Layer</text>
+    </g><!--entity
+    EfficientNet-B3 Model-->
+    <g class="entity" data-entity="EfficientNet-B3 Model" data-source-line="20" data-uid="ent0014"
+      id="entity_EfficientNet-B3 Model">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="191.7783" x="1157" y="496.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1328.7783" y="501.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1326.7783" y="503.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1326.7783" y="507.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="151.7783" x="1172" y="529.792">EfficientNet-B3 Model</text>
+    </g><!--entity
+    Leaf Classifier-->
+    <g class="entity" data-entity="Leaf Classifier" data-source-line="21" data-uid="ent0015"
+      id="entity_Leaf Classifier">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="138.2803" x="984" y="496.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1102.2803" y="501.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1100.2803" y="503.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1100.2803" y="507.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="98.2803" x="999" y="529.792">Leaf Classifier</text>
+    </g><!--entity
+    Expert Agent-->
+    <g class="entity" data-entity="Expert Agent" data-source-line="25" data-uid="ent0017"
+      id="entity_Expert Agent">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="131.7656" x="1944" y="496.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="2055.7656" y="501.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="2053.7656" y="503.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="2053.7656" y="507.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="91.7656" x="1959" y="529.792">Expert Agent</text>
+    </g><!--entity
+    Report Agent-->
+    <g class="entity" data-entity="Report Agent" data-source-line="26" data-uid="ent0018"
+      id="entity_Report Agent">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="132.9277" x="1775.5" y="496.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1888.4277" y="501.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1886.4277" y="503.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1886.4277" y="507.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="92.9277" x="1790.5" y="529.792">Report Agent</text>
+    </g><!--entity
+    Crop Planner-->
+    <g class="entity" data-entity="Crop Planner" data-source-line="27" data-uid="ent0019"
+      id="entity_Crop Planner">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="130.46" x="1610" y="496.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1720.46" y="501.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="1718.46"
+        y="503.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="1718.46"
+        y="507.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="90.46" x="1625" y="529.792">Crop Planner</text>
+    </g><!--entity
+    Web Search Agent-->
+    <g class="entity" data-entity="Web Search Agent" data-source-line="28" data-uid="ent0020"
+      id="entity_Web Search Agent">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="170.0879" x="1405" y="496.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1555.0879" y="501.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1553.0879" y="503.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1553.0879" y="507.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="130.0879" x="1420" y="529.792">Web Search Agent</text>
+    </g><!--entity
+    OCI Storage-->
+    <g class="entity" data-entity="OCI Storage" data-source-line="32" data-uid="ent0022"
+      id="entity_OCI Storage">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="124.1504" x="2102" y="617.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="2206.1504" y="622.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="2204.1504" y="624.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="2204.1504" y="628.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="84.1504" x="2117" y="650.792">OCI Storage</text>
+    </g><!--entity
+    Neon PostgreSQL-->
+    <g class="entity" data-entity="Neon PostgreSQL" data-source-line="33" data-uid="ent0023"
+      id="entity_Neon PostgreSQL">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="161.7275" x="1412" y="617.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1553.7275" y="622.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1551.7275" y="624.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1551.7275" y="628.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="121.7275" x="1427" y="650.792">Neon PostgreSQL</text>
+    </g><!--entity
+    Weather API-->
+    <g class="entity" data-entity="Weather API" data-source-line="34" data-uid="ent0024"
+      id="entity_Weather API">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="126.3652" x="1941" y="617.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="2047.3652" y="622.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="2045.3652" y="624.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="2045.3652" y="628.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="86.3652" x="1956" y="650.792">Weather API</text>
+    </g><!--entity
+    Gemma LLM-->
+    <g class="entity" data-entity="Gemma LLM" data-source-line="35" data-uid="ent0025"
+      id="entity_Gemma LLM">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="127.4453" x="1778.5" y="617.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1885.9453" y="622.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1883.9453" y="624.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1883.9453" y="628.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="87.4453" x="1793.5" y="650.792">Gemma LLM</text>
+    </g><!--entity
+    Tavily Search-->
+    <g class="entity" data-entity="Tavily Search" data-source-line="36" data-uid="ent0026"
+      id="entity_Tavily Search">
+      <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5"
+        style="stroke:#181818;stroke-width:0.5;" width="134.3359" x="1609" y="617.7969" />
+      <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15"
+        x="1723.3359" y="622.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1721.3359" y="624.7969" />
+      <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4"
+        x="1721.3359" y="628.7969" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="94.3359" x="1624" y="650.792">Tavily Search</text>
+    </g><!--entity
+    User-->
+    <g class="entity" data-entity="User" data-source-line="3" data-uid="ent0002" id="entity_User">
+      <ellipse cx="277.9551" cy="51.2969" fill="#F1F1F1" rx="8" ry="8"
+        style="stroke:#181818;stroke-width:0.5;" />
+      <path
+        d="M277.9551,59.2969 L277.9551,86.2969 M264.9551,67.2969 L290.9551,67.2969 M277.9551,86.2969 L264.9551,101.2969 M277.9551,86.2969 L290.9551,101.2969"
+        fill="none" style="stroke:#181818;stroke-width:0.5;" />
+      <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing"
+        textLength="31.9102" x="262" y="115.792">User</text>
+    </g><!--link
+    User to Pages / Routes-->
+    <g class="link" data-entity-1="User" data-entity-2="Pages . Routes" data-source-line="39"
+      data-uid="lnk27" id="link_User_Pages . Routes">
+      <path d="M278,118.7969 C278,138.4469 278,155.9369 278,172.7269" fill="none"
+        id="User-to-Pages / Routes" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="278,178.7269,282,169.7269,278,173.7269,274,169.7269,278,178.7269"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Pages / Routes to API Gateway (/predict, /upload, /ai)-->
+    <g class="link" data-entity-1="Pages . Routes"
+      data-entity-2="API Gateway ..predict. .upload. .ai." data-source-line="41" data-uid="lnk28"
+      id="link_Pages . Routes_API Gateway ..predict. .upload. .ai.">
+      <path
+        d="M350.02,221.3669 C356.08,222.6269 362.13,223.7969 368,224.7969 C445.04,237.8869 466.37,226.4869 543,241.7969 C595.1,252.2069 646.9568,268.3236 688.9268,282.7736"
+        fill="none" id="Pages / Routes-to-API Gateway (/predict, /upload, /ai)"
+        style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="694.6,284.7269,687.3924,278.0149,689.8724,283.0992,684.7881,285.5791,694.6,284.7269"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    API Gateway (/predict, /upload, /ai) to Inference Service-->
+    <g class="link" data-entity-1="API Gateway ..predict. .upload. .ai."
+      data-entity-2="Inference Service" data-source-line="43" data-uid="lnk29"
+      id="link_API Gateway ..predict. .upload. .ai._Inference Service">
+      <path d="M735.7,330.8569 C720.26,348.4969 702.6618,368.622 687.2218,386.262" fill="none"
+        id="API Gateway (/predict, /upload, /ai)-to-Inference Service"
+        style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="683.27,390.7769,692.2075,386.6391,686.5631,387.0145,686.1877,381.3701,683.27,390.7769"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Inference Service to EfficientNet-B3 Model-->
+    <g class="link" data-entity-1="Inference Service" data-entity-2="EfficientNet-B3 Model"
+      data-source-line="44" data-uid="lnk30" id="link_Inference Service_EfficientNet-B3 Model">
+      <path
+        d="M745.11,434.0069 C751.14,435.0769 757.15,436.0169 763,436.7969 C846.13,447.8269 1059.49,430.3369 1140,453.7969 C1170.64,462.7269 1196.8762,478.1226 1218.6962,493.2226"
+        fill="none" id="Inference Service-to-EfficientNet-B3 Model"
+        style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1223.63,496.6369,1218.5055,488.2262,1219.5185,493.7916,1213.9531,494.8046,1223.63,496.6369"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Inference Service to Leaf Classifier-->
+    <g class="link" data-entity-1="Inference Service" data-entity-2="Leaf Classifier"
+      data-source-line="45" data-uid="lnk31" id="link_Inference Service_Leaf Classifier">
+      <path
+        d="M745.15,433.6869 C751.18,434.8269 757.17,435.8769 763,436.7969 C842.82,449.3669 867.19,428.7069 944,453.7969 C973.32,463.3769 998.2677,478.4575 1019.2977,493.2975"
+        fill="none" id="Inference Service-to-Leaf Classifier" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1024.2,496.7569,1019.1528,488.2996,1020.1147,493.8741,1014.5403,494.836,1024.2,496.7569"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Inference Service to Database Layer-->
+    <g class="link" data-entity-1="Inference Service" data-entity-2="Database Layer"
+      data-source-line="47" data-uid="lnk32" id="link_Inference Service_Database Layer">
+      <path d="M683.93,436.8569 C699.89,454.4969 718.1273,474.6852 734.0673,492.3252" fill="none"
+        id="Inference Service-to-Database Layer" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="738.09,496.7769,735.0238,487.4175,734.7377,493.0671,729.0881,492.7811,738.09,496.7769"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Database Layer to Neon PostgreSQL-->
+    <g class="link" data-entity-1="Database Layer" data-entity-2="Neon PostgreSQL"
+      data-source-line="48" data-uid="lnk33" id="link_Database Layer_Neon PostgreSQL">
+      <path
+        d="M833.05,538.7169 C872.97,547.8769 922.99,558.7469 968,566.7969 C1124.26,594.7369 1302.352,617.4578 1405.792,629.7678"
+        fill="none" id="Database Layer-to-Neon PostgreSQL" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1411.75,630.4769,1403.2858,625.4414,1406.785,629.886,1402.3404,633.3853,1411.75,630.4769"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    API Gateway (/predict, /upload, /ai) to AI Orchestrator-->
+    <g class="link" data-entity-1="API Gateway ..predict. .upload. .ai."
+      data-entity-2="AI Orchestrator" data-source-line="50" data-uid="lnk34"
+      id="link_API Gateway ..predict. .upload. .ai._AI Orchestrator">
+      <path d="M776,330.8569 C792.8,348.4969 812.1034,368.7908 828.8934,386.4308" fill="none"
+        id="API Gateway (/predict, /upload, /ai)-to-AI Orchestrator"
+        style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="833.03,390.7769,829.7224,381.5,829.5828,387.1552,823.9277,387.0155,833.03,390.7769"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    AI Orchestrator to Expert Agent-->
+    <g class="link" data-entity-1="AI Orchestrator" data-entity-2="Expert Agent"
+      data-source-line="52" data-uid="lnk35" id="link_AI Orchestrator_Expert Agent">
+      <path
+        d="M927.88,414.8769 C1154.95,415.4669 1832.92,420.0869 1926,453.7969 C1950.45,462.6469 1969.1243,477.3089 1984.8543,492.4289"
+        fill="none" id="AI Orchestrator-to-Expert Agent" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1989.18,496.5869,1985.4634,487.4662,1985.5753,493.1219,1979.9195,493.2338,1989.18,496.5869"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    AI Orchestrator to Report Agent-->
+    <g class="link" data-entity-1="AI Orchestrator" data-entity-2="Report Agent"
+      data-source-line="53" data-uid="lnk36" id="link_AI Orchestrator_Report Agent">
+      <path
+        d="M927.51,415.4169 C1129.15,417.4769 1681.06,425.6369 1758,453.7969 C1782.42,462.7369 1801.0889,477.3946 1816.8289,492.4846"
+        fill="none" id="AI Orchestrator-to-Report Agent" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1821.16,496.6369,1817.4315,487.5211,1817.5507,493.1767,1811.8951,493.2959,1821.16,496.6369"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    AI Orchestrator to Crop Planner-->
+    <g class="link" data-entity-1="AI Orchestrator" data-entity-2="Crop Planner"
+      data-source-line="54" data-uid="lnk37" id="link_AI Orchestrator_Crop Planner">
+      <path
+        d="M927.74,416.1469 C1102.54,419.7069 1531.97,430.7269 1593,453.7969 C1616.96,462.8569 1635.1198,477.4521 1650.4498,492.5121"
+        fill="none" id="AI Orchestrator-to-Crop Planner" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1654.73,496.7169,1651.1129,487.5563,1651.1632,493.2129,1645.5066,493.2631,1654.73,496.7169"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    AI Orchestrator to Web Search Agent-->
+    <g class="link" data-entity-1="AI Orchestrator" data-entity-2="Web Search Agent"
+      data-source-line="55" data-uid="lnk38" id="link_AI Orchestrator_Web Search Agent">
+      <path
+        d="M927.92,416.7969 C1049.21,420.6869 1285,430.9769 1365,453.7969 C1397.93,463.1869 1427.1129,478.6139 1451.4329,493.5039"
+        fill="none" id="AI Orchestrator-to-Web Search Agent" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1456.55,496.6369,1450.963,488.5261,1452.2858,494.0261,1446.7857,495.3488,1456.55,496.6369"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Expert Agent to Gemma LLM-->
+    <g class="link" data-entity-1="Expert Agent" data-entity-2="Gemma LLM" data-source-line="57"
+      data-uid="lnk39" id="link_Expert Agent_Gemma LLM">
+      <path
+        d="M1972.59,543.0469 C1957.28,552.4769 1939.55,563.8069 1924,574.7969 C1904.87,588.3269 1888.8319,600.9252 1873.0319,613.8652"
+        fill="none" id="Expert Agent-to-Gemma LLM" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1868.39,617.6669,1877.8873,615.059,1872.2583,614.4988,1872.8184,608.8698,1868.39,617.6669"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Report Agent to Gemma LLM-->
+    <g class="link" data-entity-1="Report Agent" data-entity-2="Gemma LLM" data-source-line="58"
+      data-uid="lnk40" id="link_Report Agent_Gemma LLM">
+      <path d="M1842,542.8969 C1842,564.1369 1842,590.0769 1842,611.4069" fill="none"
+        id="Report Agent-to-Gemma LLM" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1842,617.4069,1846,608.4069,1842,612.4069,1838,608.4069,1842,617.4069"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Crop Planner to Gemma LLM-->
+    <g class="link" data-entity-1="Crop Planner" data-entity-2="Gemma LLM" data-source-line="59"
+      data-uid="lnk41" id="link_Crop Planner_Gemma LLM">
+      <path
+        d="M1712.44,543.0069 C1727.76,552.4269 1745.49,563.7569 1761,574.7969 C1779.95,588.2869 1795.7549,600.8428 1811.3549,613.8028"
+        fill="none" id="Crop Planner-to-Gemma LLM" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1815.97,617.6369,1811.6034,608.8089,1812.124,614.4418,1806.4912,614.9625,1815.97,617.6369"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    Web Search Agent to Tavily Search-->
+    <g class="link" data-entity-1="Web Search Agent" data-entity-2="Tavily Search"
+      data-source-line="61" data-uid="lnk42" id="link_Web Search Agent_Tavily Search">
+      <path
+        d="M1535.63,542.8369 C1553.59,552.0469 1574.15,563.2869 1592,574.7969 C1612.15,587.7869 1628.8384,600.557 1644.9784,613.707"
+        fill="none" id="Web Search Agent-to-Tavily Search" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="1649.63,617.4969,1645.1792,608.7111,1645.7537,614.3387,1640.1261,614.9132,1649.63,617.4969"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    AI Orchestrator to Weather API-->
+    <g class="link" data-entity-1="AI Orchestrator" data-entity-2="Weather API"
+      data-source-line="62" data-uid="lnk43" id="link_AI Orchestrator_Weather API">
+      <path
+        d="M927.71,414.3269 C1188.12,413.0169 2051.36,411.8569 2092,453.7969 C2126.95,489.8669 2113.35,521.3369 2092,566.7969 C2090.33,570.3469 2061.8812,593.5637 2036.7612,613.7037"
+        fill="none" id="AI Orchestrator-to-Weather API" style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="2032.08,617.4569,2041.6039,614.9479,2035.981,614.3292,2036.5997,608.7063,2032.08,617.4569"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--link
+    API Gateway (/predict, /upload, /ai) to OCI Storage-->
+    <g class="link" data-entity-1="API Gateway ..predict. .upload. .ai." data-entity-2="OCI Storage"
+      data-source-line="64" data-uid="lnk44"
+      id="link_API Gateway ..predict. .upload. .ai._OCI Storage">
+      <path
+        d="M897.81,314.3869 C1231.04,328.7569 2038.56,371.7369 2128,453.7969 C2174.05,496.0469 2172.2243,572.0727 2167.8943,611.5427"
+        fill="none" id="API Gateway (/predict, /upload, /ai)-to-OCI Storage"
+        style="stroke:#181818;stroke-width:1;" />
+      <polygon fill="#181818"
+        points="2167.24,617.5069,2172.1976,608.9967,2167.7852,612.5367,2164.2453,608.1244,2167.24,617.5069"
+        style="stroke:#181818;stroke-width:1;" />
+    </g><!--SRC=[bLF1Zjem4BtxAqOvWLIMG-
+    -LiW6saG9BbwAUPvC9k9lOaJtPWgh-Umq12ST4shqvxxtCl1a_i-IAO5sXOfX9IsW9PiIKizGADaVBL4DiyhqyOQqX66sR0fcAiH2OipQmjMI4C8v6jNF5eeNHYaaLC5hHWHz-MuYRPXp1Nv7hkj6ANAzeZJkoC8KNtJBPw9RQff1SltmcQIth6hvh_UOJ2sdezUGzRdaVYN-UdqVCtyvs5cWvNgTzAmw29pVI7pp2QDeOAcJENs3QDfN6mXrGZhrkgIh9aCe9DcJUPKuU6wVmx1P6bWsw_NZS31dFFZCyakaRNMONtFStBqkPItTS4KyUly9I5rHvPJF24f8AhPMb3EiwH_7kj4mOPGvAzYXLVmdpGqE6EvrN-uKQVPT8Z6xEoL7a3_cBNjrYqEtW-fTlPtvWCWghw_PipyfpaiB6RSubnAkx8XV9jRQyCxJvaVLw8k_9WBjB3t-YkaR8igM7_iHtMHql9i_sJY66oUHR64pHHphPnq8ZFgRhIjw9rHsiqmvaOb0V96HOsize7-XKmMLyQjJWZOW0kipfnN90v4TqGEJ7TK0KHbVu5ZhPJQhyvY7jjGre4NRiDBs43jgzIVsdBk3sZVq7]-->
+  </g>
+</svg>
