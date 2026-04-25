@@ -268,6 +268,9 @@ export default function ProfilePage() {
         }
         const response = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`,
+          {
+            headers: { "ngrok-skip-browser-warning": "true" },
+          },
         );
         const data = await response.json();
 

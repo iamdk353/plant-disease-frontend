@@ -170,7 +170,9 @@ export default function DiagnosePage() {
       if (selectedFile) {
         fileToUpload = selectedFile;
       } else {
-        const res = await fetch(capturedImage!);
+        const res = await fetch(capturedImage!, {
+          headers: { "ngrok-skip-browser-warning": "true" },
+        });
         fileToUpload = await res.blob();
       }
 
@@ -181,6 +183,7 @@ export default function DiagnosePage() {
 
       const uploadRes = await fetch(`${apiUrl}/upload`, {
         method: "POST",
+        headers: { "ngrok-skip-browser-warning": "true" },
         body: formData,
       });
 
@@ -194,7 +197,10 @@ export default function DiagnosePage() {
       // 3. Predict
       const predictRes = await fetch(`${apiUrl}/predict`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify({
           object_names: [objectName], // Wait, predict schema
           uid: user.uid,

@@ -41,6 +41,9 @@ export default function ActivitiesPage() {
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`,
+          {
+            headers: { "ngrok-skip-browser-warning": "true" },
+          },
         );
         if (!response.ok) {
           throw new Error("Failed to fetch activities");

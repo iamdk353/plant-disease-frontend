@@ -50,6 +50,7 @@ export default function SignupPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({
             firebase_uid: userCredential.user.uid,
@@ -89,6 +90,7 @@ export default function SignupPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({
             firebase_uid: userCredential.user.uid,
@@ -234,9 +236,7 @@ export default function SignupPage() {
                   type="submit"
                 >
                   {loading ? "Creating Account..." : "Create Account"}
-                  {!loading && (
-                    <ArrowRight className="w-5 h-5" />
-                  )}
+                  {!loading && <ArrowRight className="w-5 h-5" />}
                 </button>
               </div>
 

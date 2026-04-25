@@ -104,6 +104,9 @@ export default function AdvisoryPage() {
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`,
+          {
+            headers: { "ngrok-skip-browser-warning": "true" },
+          },
         );
         if (!response.ok) throw new Error("Failed to fetch activities");
         const data = await response.json();
@@ -154,7 +157,9 @@ export default function AdvisoryPage() {
           url.searchParams.set("lat", String(locData.lat));
           url.searchParams.set("lon", String(locData.lon));
         }
-        const getResp = await fetch(url.toString());
+        const getResp = await fetch(url.toString(), {
+          headers: { "ngrok-skip-browser-warning": "true" },
+        });
         if (getResp.ok) {
           const data = await getResp.json();
           if (data && (data.report || data.report_text)) {
@@ -170,7 +175,10 @@ export default function AdvisoryPage() {
       // 2) No cached report found — POST to generate and save
       const postResp = await fetch(`${apiUrl}/api/ai/report`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify({ prediction_id: activity.id, location: locData }),
       });
 
@@ -207,6 +215,9 @@ export default function AdvisoryPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const resp = await fetch(
         `${apiUrl}/api/ai/report?prediction_id=${activity.id}`,
+        {
+          headers: { "ngrok-skip-browser-warning": "true" },
+        },
       );
       if (resp.ok) {
         const data = await resp.json();
@@ -273,6 +284,7 @@ export default function AdvisoryPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify(payload),
       });
@@ -413,6 +425,9 @@ export default function AdvisoryPage() {
         const apiKey = process.env.NEXT_PUBLIC_WEATHER_API;
         const response = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`,
+          {
+            headers: { "ngrok-skip-browser-warning": "true" },
+          },
         );
         const data = await response.json();
 
