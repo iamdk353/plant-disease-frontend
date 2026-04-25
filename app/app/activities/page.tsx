@@ -45,15 +45,13 @@ export default function ActivitiesPage() {
         if (!response.ok) {
           throw new Error("Failed to fetch activities");
         }
-        const data = await response.json();
-        // Since we want newest activities roughly first if they aren't sorted, we might want to map or reverse
-        setActivities(
-          data.sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime(),
-          ),
+        const data = (await response.json()) as Activity[];
+        // Ensure newest activities appear first
+        data.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
+        setActivities(data);
       } catch (err: any) {
         setError(err.message || "An error occurred");
       } finally {
@@ -194,7 +192,10 @@ function ActivityCard({ activity }: { activity: Activity }) {
     return label.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
-  const isHealthy = topResult?.label.toLowerCase().includes("healthy");
+  const isHealthy =
+    !!topResult && typeof topResult.label === "string"
+      ? topResult.label.toLowerCase().includes("healthy")
+      : false;
 
   // Calculate confidence styles using theme colors via Tailwind Utilities
   const confPercent = topResult ? Math.round(topResult.confidence * 100) : 0;
