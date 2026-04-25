@@ -40,7 +40,7 @@ export default function ActivitiesPage() {
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/activities/?uid=${user.uid}`,
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`,
         );
         if (!response.ok) {
           throw new Error("Failed to fetch activities");
