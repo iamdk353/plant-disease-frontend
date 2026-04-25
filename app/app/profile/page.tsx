@@ -261,13 +261,8 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchLocation = async (lat: number, lon: number) => {
       try {
-        const apiKey = process.env.NEXT_PUBLIC_WEATHER_API;
-        if (!apiKey) {
-          setLocation("Unknown Location");
-          return;
-        }
         const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/weather?lat=${lat}&lon=${lon}`,
           {
             headers: { "ngrok-skip-browser-warning": "true" },
           },

@@ -423,9 +423,8 @@ export default function AdvisoryPage() {
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
       try {
-        const apiKey = process.env.NEXT_PUBLIC_WEATHER_API;
         const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`,
+          `${process.env.NEXT_PUBLIC_API_URL}/weather?lat=${lat}&lon=${lon}`,
           {
             headers: { "ngrok-skip-browser-warning": "true" },
           },
