@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ChevronRight } from "lucide-react";
+import { buildActivityImageUrl } from "@/lib/api";
 
 interface Activity {
   id: string;
@@ -81,11 +82,11 @@ const RecentActivity = () => {
                 className="flex items-center gap-6 p-4 bg-surface-container-low rounded-lg group hover:bg-surface-container-high transition-colors cursor-pointer"
               >
                 <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-surface-variant border border-outline-variant/30">
-                  <img
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    alt={topResult.label}
-                    src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${activity.image_name}`}
-                  />
+                    <img
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      alt={topResult.label}
+                      src={buildActivityImageUrl(activity.image_name)}
+                    />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">

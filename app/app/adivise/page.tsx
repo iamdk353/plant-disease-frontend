@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { buildActivityImageUrl } from "@/lib/api";
 import Link from "next/link";
 import Nav from "../../components/Nav";
 import {
@@ -582,7 +583,7 @@ export default function AdvisoryPage() {
                     >
                       <div className="w-12 h-12 rounded-lg bg-surface-variant overflow-hidden flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <img
-                          src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${activity.image_name}`}
+                          src={buildActivityImageUrl(activity.image_name)}
                           alt={topResult.label}
                           className="w-full h-full object-cover"
                           loading="lazy"
@@ -762,7 +763,7 @@ export default function AdvisoryPage() {
                   {/* Image */}
                   <div className="w-full max-w-lg aspect-square rounded-2xl overflow-hidden shadow-lg ring-1 ring-outline-variant/20">
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/image/${selectedActivity.image_name}`}
+                      src={buildActivityImageUrl(selectedActivity.image_name)}
                       alt="Activity Image"
                       className="w-full h-full object-cover"
                     />

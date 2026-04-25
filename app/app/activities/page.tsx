@@ -5,6 +5,7 @@ import Nav from "@/app/components/Nav";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import gsap from "gsap";
 import { History } from "lucide-react";
+import { buildActivityImageUrl } from "@/lib/api";
 
 interface PredictionResult {
   rank: number;
@@ -280,7 +281,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
       {/* Visual Image Banner */}
       <div className="w-full h-48 relative overflow-hidden border-b border-outline-variant/30 flex-shrink-0 bg-surface-variant">
         <img
-          src={`${process.env.NEXT_PUBLIC_API_URL}/activities/image/${activity.image_name}`}
+          src={buildActivityImageUrl(activity.image_name)}
           alt={`Crop analysis for ${activity.image_name}`}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
           loading="lazy"
