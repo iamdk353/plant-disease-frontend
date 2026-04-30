@@ -6,5 +6,5 @@ export const getApiBaseUrl = () =>
 export const buildActivityImageUrl = (imageName: string) => {
   const baseUrl = getApiBaseUrl();
   const safeName = encodeURIComponent(imageName);
-  return `${baseUrl}/activities/image/${safeName}?ngrok-skip-browser-warning=true`;
+  return `${baseUrl}/activities/image/${safeName}`;
 };
