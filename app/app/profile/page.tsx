@@ -182,11 +182,15 @@ const mergeProfiles = (
 ): UserProfile => ({
   ...baseProfile,
   ...incomingProfile,
-  phone_number: incomingProfile.phone_number ?? baseProfile?.phone_number ?? null,
+  phone_number:
+    incomingProfile.phone_number ?? baseProfile?.phone_number ?? null,
   years_of_experience:
-    incomingProfile.years_of_experience ?? baseProfile?.years_of_experience ?? null,
+    incomingProfile.years_of_experience ??
+    baseProfile?.years_of_experience ??
+    null,
   acres: incomingProfile.acres ?? baseProfile?.acres ?? null,
-  primary_crops: incomingProfile.primary_crops ?? baseProfile?.primary_crops ?? null,
+  primary_crops:
+    incomingProfile.primary_crops ?? baseProfile?.primary_crops ?? null,
   soil_type: incomingProfile.soil_type ?? baseProfile?.soil_type ?? null,
   photo_object_name:
     incomingProfile.photo_object_name ?? baseProfile?.photo_object_name ?? null,
@@ -895,7 +899,10 @@ export default function ProfilePage() {
           profile?.primary_crops ??
           null,
         soil_type:
-          updates.soilType ?? serverProfile.soil_type ?? profile?.soil_type ?? null,
+          updates.soilType ??
+          serverProfile.soil_type ??
+          profile?.soil_type ??
+          null,
       });
 
       setProfile(optimisticProfile);
@@ -1029,11 +1036,6 @@ export default function ProfilePage() {
                     </option>
                   ))}
                 </select>
-                <p className="mt-2 text-xs text-on-surface-variant">
-                  {translateError
-                    ? translateError
-                    : "Uses Google Translate and remembers your choice on this device. A quick refresh is used to apply the selected language reliably."}
-                </p>
               </div>
             </div>
           </div>
@@ -1258,6 +1260,23 @@ export default function ProfilePage() {
                   <span className="text-xl font-bold text-on-surface">
                     {displaySoilType}
                   </span>
+                </div>
+              </div>
+            </div>
+            <div className="my-8 rounded-xl  bg-yellow-50 p-4 text-sm text-yellow-900">
+              <div className="flex items-start gap-3">
+                <span className="text-lg"></span>
+                <div>
+                  <p className="font-semibold">Early Stage Application</p>
+                  <p className="mt-1 text-xs leading-relaxed">
+                    This system is currently in its initial development phase.
+                    It does not yet support all crop types and may have limited
+                    accuracy in certain scenarios.
+                    <br />
+                    We are continuously improving the model by expanding crop
+                    coverage, refining predictions, and incorporating more
+                    real-world data.
+                  </p>
                 </div>
               </div>
             </div>
