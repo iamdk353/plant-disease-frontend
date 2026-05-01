@@ -104,7 +104,8 @@ export default function AdvisoryPage() {
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/activities/?uid=${user.uid}` ||
+            "http://localhost:8000/activities/?uid=${user.uid}",
           {
             headers: { "ngrok-skip-browser-warning": "true" },
           },

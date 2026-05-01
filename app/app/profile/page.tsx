@@ -1,11 +1,12 @@
 "use client";
-import { type ChangeEvent, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Nav from "@/app/components/Nav";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { getApiBaseUrl } from "@/lib/api";
 import {
   AtSign,
   Award,
@@ -29,6 +30,7 @@ import {
 const GOOGLE_TRANSLATE_STORAGE_KEY = "agrinex-preferred-language";
 const GOOGLE_TRANSLATE_SCRIPT_ID = "google-translate-script";
 const GOOGLE_TRANSLATE_CONTAINER_ID = "google_translate_element";
+const PROFILE_STORAGE_KEY_PREFIX = "agrinex-profile";
 
 const LANGUAGE_OPTIONS = [
   { value: "en", label: "English" },
@@ -41,6 +43,29 @@ const LANGUAGE_OPTIONS = [
 
 type SupportedLanguage = (typeof LANGUAGE_OPTIONS)[number]["value"];
 
+type UserProfile = {
+  id: string;
+  firebase_uid: string;
+  email: string | null;
+  name: string | null;
+  photo_object_name: string | null;
+  photo_url: string | null;
+  phone_number: string | null;
+  years_of_experience: number | null;
+  acres: number | null;
+  primary_crops: string[] | null;
+  soil_type: string | null;
+};
+
+type RawUserProfile = Omit<
+  UserProfile,
+  "years_of_experience" | "acres" | "primary_crops"
+> & {
+  years_of_experience: number | string | null;
+  acres: number | string | null;
+  primary_crops: string[] | string | null;
+};
+
 const SUPPORTED_LANGUAGE_SET = new Set<SupportedLanguage>(
   LANGUAGE_OPTIONS.map(({ value }) => value),
 );
@@ -50,6 +75,281 @@ const INCLUDED_LANGUAGE_CODES = LANGUAGE_OPTIONS.filter(
 )
   .map(({ value }) => value)
   .join(",");
+
+const API_BASE = getApiBaseUrl();
+const PROFILE_UPDATED_EVENT = "profile-updated";
+
+const notifyProfileUpdated = (profile: UserProfile) => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent<UserProfile>(PROFILE_UPDATED_EVENT, { detail: profile }),
+    );
+  }
+};
+
+const getProfileStorageKey = (uid: string) =>
+  `${PROFILE_STORAGE_KEY_PREFIX}:${uid}`;
+
+const readCachedProfile = (uid: string): UserProfile | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const rawProfile = window.localStorage.getItem(getProfileStorageKey(uid));
+    if (!rawProfile) {
+      return null;
+    }
+
+    return JSON.parse(rawProfile) as UserProfile;
+  } catch (error) {
+    console.error("Failed to read cached profile:", error);
+    return null;
+  }
+};
+
+const writeCachedProfile = (uid: string, profile: UserProfile) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      getProfileStorageKey(uid),
+      JSON.stringify(profile),
+    );
+  } catch (error) {
+    console.error("Failed to cache profile:", error);
+  }
+};
+
+const parseNullableNumber = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? null : value;
+  }
+
+  const parsedValue = Number.parseFloat(value);
+  return Number.isNaN(parsedValue) ? null : parsedValue;
+};
+
+const parsePrimaryCrops = (
+  value: string[] | string | null | undefined,
+): string[] | null => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((crop) => crop.trim()).filter(Boolean);
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return null;
+  }
+
+  try {
+    const parsedValue = JSON.parse(trimmedValue) as unknown;
+    if (Array.isArray(parsedValue)) {
+      return parsedValue
+        .map((crop) => (typeof crop === "string" ? crop.trim() : ""))
+        .filter(Boolean);
+    }
+  } catch {
+    // Fall back to comma-separated parsing below.
+  }
+
+  return trimmedValue
+    .split(",")
+    .map((crop) => crop.trim().replace(/^"+|"+$/g, ""))
+    .filter(Boolean);
+};
+
+const normalizeProfile = (rawProfile: RawUserProfile): UserProfile => ({
+  ...rawProfile,
+  years_of_experience: parseNullableNumber(rawProfile.years_of_experience),
+  acres: parseNullableNumber(rawProfile.acres),
+  primary_crops: parsePrimaryCrops(rawProfile.primary_crops),
+});
+
+const mergeProfiles = (
+  baseProfile: UserProfile | null,
+  incomingProfile: UserProfile,
+): UserProfile => ({
+  ...baseProfile,
+  ...incomingProfile,
+  phone_number: incomingProfile.phone_number ?? baseProfile?.phone_number ?? null,
+  years_of_experience:
+    incomingProfile.years_of_experience ?? baseProfile?.years_of_experience ?? null,
+  acres: incomingProfile.acres ?? baseProfile?.acres ?? null,
+  primary_crops: incomingProfile.primary_crops ?? baseProfile?.primary_crops ?? null,
+  soil_type: incomingProfile.soil_type ?? baseProfile?.soil_type ?? null,
+  photo_object_name:
+    incomingProfile.photo_object_name ?? baseProfile?.photo_object_name ?? null,
+  photo_url: incomingProfile.photo_url ?? baseProfile?.photo_url ?? null,
+});
+
+class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+const readErrorMessage = async (response: Response) => {
+  const text = await response.text();
+  return (
+    text.trim() ||
+    response.statusText ||
+    `Request failed with ${response.status}`
+  );
+};
+
+const getProfile = async (uid: string): Promise<UserProfile> => {
+  const res = await fetch(`${API_BASE}/users/${encodeURIComponent(uid)}`, {
+    headers: { "ngrok-skip-browser-warning": "true" },
+  });
+
+  if (res.status === 404) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (!res.ok) {
+    throw new ApiError(res.status, await readErrorMessage(res));
+  }
+
+  return normalizeProfile((await res.json()) as RawUserProfile);
+};
+
+const createProfile = async ({
+  uid,
+  name,
+  email,
+  phoneNumber,
+  yearsOfExperience,
+  acres,
+  primaryCrops,
+  soilType,
+  photoFile,
+}: {
+  uid: string;
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  yearsOfExperience?: number;
+  acres?: number;
+  primaryCrops?: string[];
+  soilType?: string;
+  photoFile?: File;
+}): Promise<UserProfile> => {
+  const form = new FormData();
+  form.append("uid", uid);
+
+  if (name?.trim()) {
+    form.append("name", name.trim());
+  }
+  if (email?.trim()) {
+    form.append("email", email.trim());
+  }
+  if (phoneNumber?.trim()) {
+    form.append("phone_number", phoneNumber.trim());
+  }
+  if (yearsOfExperience !== undefined) {
+    form.append("years_of_experience", yearsOfExperience.toString());
+  }
+  if (acres !== undefined) {
+    form.append("acres", acres.toString());
+  }
+  if (primaryCrops?.length) {
+    form.append("primary_crops", primaryCrops.join(","));
+  }
+  if (soilType?.trim()) {
+    form.append("soil_type", soilType.trim());
+  }
+  if (photoFile) {
+    form.append("photo", photoFile);
+  }
+
+  const res = await fetch(`${API_BASE}/users/`, {
+    method: "POST",
+    body: form,
+    headers: { "ngrok-skip-browser-warning": "true" },
+  });
+
+  if (res.status === 409) {
+    throw new ApiError(409, "User already exists");
+  }
+
+  if (!res.ok) {
+    throw new ApiError(res.status, await readErrorMessage(res));
+  }
+
+  return normalizeProfile((await res.json()) as RawUserProfile);
+};
+
+const updateProfile = async (
+  uid: string,
+  updates: {
+    name?: string;
+    email?: string;
+    phoneNumber?: string;
+    yearsOfExperience?: number;
+    acres?: number;
+    primaryCrops?: string[];
+    soilType?: string;
+    photoFile?: File;
+  },
+): Promise<UserProfile> => {
+  const form = new FormData();
+
+  if (updates.name !== undefined) {
+    form.append("name", updates.name);
+  }
+  if (updates.email !== undefined) {
+    form.append("email", updates.email);
+  }
+  if (updates.phoneNumber !== undefined) {
+    form.append("phone_number", updates.phoneNumber);
+  }
+  if (updates.yearsOfExperience !== undefined) {
+    form.append("years_of_experience", updates.yearsOfExperience.toString());
+  }
+  if (updates.acres !== undefined) {
+    form.append("acres", updates.acres.toString());
+  }
+  if (updates.primaryCrops !== undefined) {
+    form.append("primary_crops", updates.primaryCrops.join(","));
+  }
+  if (updates.soilType !== undefined) {
+    form.append("soil_type", updates.soilType);
+  }
+  if (updates.photoFile) {
+    form.append("photo", updates.photoFile);
+  }
+
+  const res = await fetch(`${API_BASE}/users/${encodeURIComponent(uid)}`, {
+    method: "PATCH",
+    body: form,
+    headers: { "ngrok-skip-browser-warning": "true" },
+  });
+
+  if (res.status === 409) {
+    throw new ApiError(409, "Email already registered");
+  }
+
+  if (!res.ok) {
+    throw new ApiError(res.status, await readErrorMessage(res));
+  }
+
+  return normalizeProfile((await res.json()) as RawUserProfile);
+};
 
 interface GoogleTranslateElementOptions {
   pageLanguage: string;
@@ -124,6 +424,21 @@ const applyGoogleTranslateLanguage = async (
 export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [draftName, setDraftName] = useState("");
+  const [draftEmail, setDraftEmail] = useState("");
+  const [draftPhoneNumber, setDraftPhoneNumber] = useState("");
+  const [draftYearsExperience, setDraftYearsExperience] = useState("");
+  const [draftAcres, setDraftAcres] = useState("");
+  const [draftPrimaryCrops, setDraftPrimaryCrops] = useState("");
+  const [draftSoilType, setDraftSoilType] = useState("");
+  const [draftPhotoFile, setDraftPhotoFile] = useState<File | null>(null);
+  const [draftPhotoName, setDraftPhotoName] = useState("");
   const [selectedLanguage, setSelectedLanguage] =
     useState<SupportedLanguage>("en");
   const [hasLoadedLanguagePreference, setHasLoadedLanguagePreference] =
@@ -131,6 +446,19 @@ export default function ProfilePage() {
   const [isTranslateReady, setIsTranslateReady] = useState(false);
   const [isApplyingLanguage, setIsApplyingLanguage] = useState(false);
   const [translateError, setTranslateError] = useState("");
+  const [location, setLocation] = useState<string>("Locating...");
+
+  const syncDraftFromProfile = (nextProfile: UserProfile) => {
+    setDraftName(nextProfile.name ?? "");
+    setDraftEmail(nextProfile.email ?? "");
+    setDraftPhoneNumber(nextProfile.phone_number ?? "");
+    setDraftYearsExperience(nextProfile.years_of_experience?.toString() ?? "");
+    setDraftAcres(nextProfile.acres?.toString() ?? "");
+    setDraftPrimaryCrops(nextProfile.primary_crops?.join(", ") ?? "");
+    setDraftSoilType(nextProfile.soil_type ?? "");
+    setDraftPhotoFile(null);
+    setDraftPhotoName("");
+  };
 
   const handleLogout = async () => {
     try {
@@ -140,8 +468,6 @@ export default function ProfilePage() {
       console.error("Error signing out:", error);
     }
   };
-
-  const [location, setLocation] = useState<string>("Locating...");
 
   useEffect(() => {
     const restorePreferenceTimer = window.setTimeout(() => {
@@ -166,6 +492,125 @@ export default function ProfilePage() {
       router.push("/");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (!user) {
+      setProfile(null);
+      setProfileError("");
+      setProfileMessage("");
+      setIsEditingProfile(false);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadProfile = async () => {
+      setProfileLoading(true);
+      setProfileError("");
+      setProfileMessage("");
+
+      const cachedProfile = readCachedProfile(user.uid);
+      if (cachedProfile && !isCancelled) {
+        setProfile(cachedProfile);
+        syncDraftFromProfile(cachedProfile);
+      }
+
+      try {
+        const currentProfile = mergeProfiles(
+          cachedProfile,
+          await getProfile(user.uid),
+        );
+        if (isCancelled) {
+          return;
+        }
+
+        setProfile(currentProfile);
+        writeCachedProfile(user.uid, currentProfile);
+        notifyProfileUpdated(currentProfile);
+        syncDraftFromProfile(currentProfile);
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (error instanceof ApiError && error.status === 404) {
+          try {
+            const createdProfile = await createProfile({
+              uid: user.uid,
+              name: user.displayName ?? undefined,
+              email: user.email ?? undefined,
+            });
+            const mergedCreatedProfile = mergeProfiles(
+              cachedProfile,
+              createdProfile,
+            );
+
+            if (isCancelled) {
+              return;
+            }
+
+            setProfile(mergedCreatedProfile);
+            writeCachedProfile(user.uid, mergedCreatedProfile);
+            notifyProfileUpdated(mergedCreatedProfile);
+            syncDraftFromProfile(mergedCreatedProfile);
+          } catch (createError) {
+            if (isCancelled) {
+              return;
+            }
+
+            if (createError instanceof ApiError && createError.status === 409) {
+              try {
+                const existingProfile = mergeProfiles(
+                  cachedProfile,
+                  await getProfile(user.uid),
+                );
+                if (isCancelled) {
+                  return;
+                }
+
+                setProfile(existingProfile);
+                writeCachedProfile(user.uid, existingProfile);
+                notifyProfileUpdated(existingProfile);
+                syncDraftFromProfile(existingProfile);
+                return;
+              } catch (refetchError) {
+                setProfileError(
+                  refetchError instanceof Error
+                    ? refetchError.message
+                    : "Unable to load profile.",
+                );
+                return;
+              }
+            }
+
+            setProfileError(
+              createError instanceof Error
+                ? createError.message
+                : "Unable to create your profile.",
+            );
+          }
+        } else {
+          setProfileError(
+            error instanceof Error ? error.message : "Unable to load profile.",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setProfileLoading(false);
+        }
+      }
+    };
+
+    void loadProfile();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [loading, user]);
 
   useEffect(() => {
     if (!hasLoadedLanguagePreference) {
@@ -318,6 +763,187 @@ export default function ProfilePage() {
     }, 150);
   };
 
+  const handleProfileEdit = () => {
+    if (!profile) {
+      return;
+    }
+
+    syncDraftFromProfile(profile);
+    setProfileError("");
+    setProfileMessage("");
+    setIsEditingProfile(true);
+  };
+
+  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setDraftPhotoFile(file);
+    setDraftPhotoName(file?.name ?? "");
+  };
+
+  const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!user) {
+      return;
+    }
+
+    const normalizedName = draftName.trim();
+    const normalizedEmail = draftEmail.trim();
+    const normalizedPhoneNumber = draftPhoneNumber.trim();
+    const normalizedYears = draftYearsExperience.trim();
+    const normalizedAcres = draftAcres.trim();
+    const normalizedSoilType = draftSoilType.trim();
+    const normalizedPrimaryCrops = draftPrimaryCrops
+      .split(",")
+      .map((crop) => crop.trim())
+      .filter(Boolean);
+    const parsedYears = normalizedYears
+      ? Number.parseInt(normalizedYears, 10)
+      : undefined;
+    const parsedAcres = normalizedAcres
+      ? Number.parseFloat(normalizedAcres)
+      : undefined;
+    const yearsValue = Number.isNaN(parsedYears) ? undefined : parsedYears;
+    const acresValue = Number.isNaN(parsedAcres) ? undefined : parsedAcres;
+
+    const updates: {
+      name?: string;
+      email?: string;
+      phoneNumber?: string;
+      yearsOfExperience?: number;
+      acres?: number;
+      primaryCrops?: string[];
+      soilType?: string;
+      photoFile?: File;
+    } = {};
+
+    if (profile && normalizedName !== (profile.name ?? "")) {
+      updates.name = normalizedName;
+    }
+    if (profile && normalizedEmail !== (profile.email ?? "")) {
+      updates.email = normalizedEmail;
+    }
+    if (profile && normalizedPhoneNumber !== (profile.phone_number ?? "")) {
+      updates.phoneNumber = normalizedPhoneNumber;
+    }
+    if (
+      profile &&
+      yearsValue !== undefined &&
+      yearsValue !== (profile.years_of_experience ?? null)
+    ) {
+      updates.yearsOfExperience = yearsValue;
+    }
+    if (
+      profile &&
+      acresValue !== undefined &&
+      acresValue !== (profile.acres ?? null)
+    ) {
+      updates.acres = acresValue;
+    }
+    if (profile) {
+      const currentPrimaryCrops = profile.primary_crops ?? [];
+      if (normalizedPrimaryCrops.join(",") !== currentPrimaryCrops.join(",")) {
+        updates.primaryCrops = normalizedPrimaryCrops;
+      }
+    }
+    if (profile && normalizedSoilType !== (profile.soil_type ?? "")) {
+      updates.soilType = normalizedSoilType;
+    }
+    if (draftPhotoFile) {
+      updates.photoFile = draftPhotoFile;
+    }
+
+    const hasChanges =
+      updates.name !== undefined ||
+      updates.email !== undefined ||
+      updates.phoneNumber !== undefined ||
+      updates.yearsOfExperience !== undefined ||
+      updates.acres !== undefined ||
+      updates.primaryCrops !== undefined ||
+      updates.soilType !== undefined ||
+      updates.photoFile !== undefined;
+
+    if (!hasChanges) {
+      setProfileMessage("No changes to save.");
+      return;
+    }
+
+    setProfileSaving(true);
+    setProfileError("");
+    setProfileMessage("");
+
+    try {
+      const serverProfile = await updateProfile(user.uid, updates);
+      const optimisticProfile = mergeProfiles(profile, {
+        ...serverProfile,
+        name: updates.name ?? serverProfile.name ?? profile?.name ?? null,
+        email: updates.email ?? serverProfile.email ?? profile?.email ?? null,
+        phone_number:
+          updates.phoneNumber ??
+          serverProfile.phone_number ??
+          profile?.phone_number ??
+          null,
+        years_of_experience:
+          updates.yearsOfExperience ??
+          serverProfile.years_of_experience ??
+          profile?.years_of_experience ??
+          null,
+        acres: updates.acres ?? serverProfile.acres ?? profile?.acres ?? null,
+        primary_crops:
+          updates.primaryCrops ??
+          serverProfile.primary_crops ??
+          profile?.primary_crops ??
+          null,
+        soil_type:
+          updates.soilType ?? serverProfile.soil_type ?? profile?.soil_type ?? null,
+      });
+
+      setProfile(optimisticProfile);
+      writeCachedProfile(user.uid, optimisticProfile);
+      notifyProfileUpdated(optimisticProfile);
+      syncDraftFromProfile(optimisticProfile);
+      setIsEditingProfile(false);
+      setProfileMessage("Profile updated.");
+    } catch (error) {
+      setProfileError(
+        error instanceof Error ? error.message : "Unable to update profile.",
+      );
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (!profile) {
+      return;
+    }
+
+    syncDraftFromProfile(profile);
+    setProfileError("");
+    setProfileMessage("");
+    setIsEditingProfile(false);
+  };
+
+  const profileImageSrc =
+    profile?.photo_url || user?.photoURL || "https://placehold.co/256x256/png";
+  const displayName = profile?.name || user?.displayName || "Farmer";
+  const displayEmail = profile?.email || user?.email || "No email linked";
+  const displayPhoneNumber = profile?.phone_number || "No phone number linked";
+  const displayYearsExperience =
+    profile?.years_of_experience !== null &&
+    profile?.years_of_experience !== undefined
+      ? `${profile.years_of_experience} Years Exp.`
+      : "Experience not set";
+  const displayAcres =
+    profile?.acres !== null && profile?.acres !== undefined
+      ? profile.acres
+      : null;
+  const displayPrimaryCrops =
+    profile?.primary_crops && profile.primary_crops.length
+      ? profile.primary_crops
+      : null;
+  const displaySoilType = profile?.soil_type || "Not set";
+
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body overflow-x-hidden">
       <Nav />
@@ -340,18 +966,15 @@ export default function ProfilePage() {
           <div className="relative flex flex-col md:flex-row items-end gap-6 px-4 md:px-12">
             <div className="w-32 h-32 md:w-48 md:h-48 rounded-xl border-8 border-surface overflow-hidden shadow-xl shadow-on-surface/5">
               <img
-                alt="Farmer's profile picture"
+                alt="Profile picture"
                 className="w-full h-full object-cover"
-                src={
-                  user?.photoURL ||
-                  "https://lh3.googleusercontent.com/aida-public/AB6AXuCBfDGKi_Kn77VTyx7Gqqx7L4GUJ3NjdEvxL5NNMar8cRe1IEsoU_B44GY3sxEwET8k482E0CSXUer2J8Fkzy4hUcG4lJvSsQCPUgVETjCwuJIskjao5DskYmpC4IqxgC3c_-GbhyGH-NEP88DWUPiXCNnOrO9Bgy9tAYcpSqvELxlzraBiuoNRygzpm3-13Z8S8cQ8MtHXLaf_cbUktgNtO7YzUq2UamXqtZF8IapWa03wsvjxy-CR9NZdwMof4AqWQx7WD9N1R3r4"
-                }
+                src={profileImageSrc}
               />
             </div>
             <div className="flex-1 pb-4">
               <div className="flex flex-wrap items-center gap-3 mb-1">
                 <h1 className="text-4xl font-extrabold font-headline tracking-tight text-on-surface">
-                  {user?.displayName || "Farmer"}
+                  {displayName}
                 </h1>
                 <span className="bg-secondary-container text-on-secondary-container px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
                   Master Farmer
@@ -362,13 +985,19 @@ export default function ProfilePage() {
                   <MapPin className="h-[18px] w-[18px]" /> {location}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-[18px] w-[18px]" /> 15+ Years Exp.
+                  <Calendar className="h-[18px] w-[18px]" />{" "}
+                  {displayYearsExperience}
                 </span>
               </div>
             </div>
-            <div className="flex w-full flex-col gap-3 pb-4  md:w-[500px]">
+            <div className="flex w-full flex-col gap-3 pb-4 md:w-[420px] lg:w-[500px]">
               <div className="flex flex-wrap gap-3">
-                <button className="bg-gradient-to-br from-[#486808] to-[#85a947] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95 transition-transform">
+                <button
+                  className="bg-gradient-to-br from-[#486808] to-[#85a947] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95 transition-transform"
+                  onClick={handleProfileEdit}
+                  disabled={!profile || profileLoading || profileSaving}
+                  type="button"
+                >
                   <Pencil className="h-5 w-5" /> Edit Profile
                 </button>
                 <button
@@ -408,6 +1037,175 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+          {profileError ? (
+            <p className="mt-6 text-sm font-medium text-error">
+              {profileError}
+            </p>
+          ) : null}
+          {profileMessage ? (
+            <p className="mt-6 text-sm font-medium text-primary">
+              {profileMessage}
+            </p>
+          ) : null}
+          {profileLoading ? (
+            <p className="mt-6 text-xs font-medium text-on-surface-variant">
+              Loading profile...
+            </p>
+          ) : null}
+          {isEditingProfile ? (
+            <form
+              className="mt-8 grid grid-cols-1 gap-4 rounded-2xl border border-outline-variant/30 bg-surface/90 p-4 shadow-sm backdrop-blur-sm md:grid-cols-2 xl:grid-cols-3"
+              onSubmit={handleProfileSubmit}
+            >
+              <div className="grid gap-2">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-name"
+                >
+                  Name
+                </label>
+                <input
+                  id="profile-name"
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  value={draftName}
+                  onChange={(event) => setDraftName(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-email"
+                >
+                  Email
+                </label>
+                <input
+                  id="profile-email"
+                  type="email"
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  value={draftEmail}
+                  onChange={(event) => setDraftEmail(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-phone"
+                >
+                  Phone Number
+                </label>
+                <input
+                  id="profile-phone"
+                  type="tel"
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  value={draftPhoneNumber}
+                  onChange={(event) => setDraftPhoneNumber(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-years"
+                >
+                  Years of Experience
+                </label>
+                <input
+                  id="profile-years"
+                  type="number"
+                  min="0"
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  value={draftYearsExperience}
+                  onChange={(event) =>
+                    setDraftYearsExperience(event.target.value)
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-acres"
+                >
+                  Acres
+                </label>
+                <input
+                  id="profile-acres"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  value={draftAcres}
+                  onChange={(event) => setDraftAcres(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-2 md:col-span-2 xl:col-span-3">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-primary-crops"
+                >
+                  Primary Crops
+                </label>
+                <input
+                  id="profile-primary-crops"
+                  type="text"
+                  placeholder="Rice, Wheat, Corn"
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  value={draftPrimaryCrops}
+                  onChange={(event) => setDraftPrimaryCrops(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-soil-type"
+                >
+                  Soil Type
+                </label>
+                <input
+                  id="profile-soil-type"
+                  type="text"
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  value={draftSoilType}
+                  onChange={(event) => setDraftSoilType(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-2 md:col-span-2 xl:col-span-3">
+                <label
+                  className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant"
+                  htmlFor="profile-photo"
+                >
+                  Photo
+                </label>
+                <input
+                  id="profile-photo"
+                  type="file"
+                  accept="image/*"
+                  className="block w-full text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                  onChange={handlePhotoChange}
+                />
+                <p className="text-xs text-on-surface-variant">
+                  {draftPhotoName ||
+                    profile?.photo_object_name ||
+                    "No new photo selected"}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 md:col-span-2 xl:col-span-3">
+                <button
+                  className="rounded-full bg-primary px-6 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+                  disabled={profileSaving}
+                  type="submit"
+                >
+                  {profileSaving ? "Saving..." : "Save Changes"}
+                </button>
+                <button
+                  className="rounded-full border border-outline-variant/30 bg-surface-container-high px-6 py-3 font-bold text-on-surface-variant"
+                  disabled={profileSaving}
+                  type="button"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : null}
         </header>
 
         {/* Bento Grid Insights */}
@@ -421,15 +1219,13 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               <div className="space-y-2">
                 <p className="text-on-surface-variant text-sm font-bold uppercase tracking-widest">
-                  Total area
+                  Total acres
                 </p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-black font-headline text-primary">
-                    12.5
+                    {displayAcres ?? "--"}
                   </span>
-                  <span className="text-on-surface font-semibold">
-                    Hectares
-                  </span>
+                  <span className="text-on-surface font-semibold">Acres</span>
                 </div>
               </div>
               <div className="space-y-2">
@@ -437,12 +1233,20 @@ export default function ProfilePage() {
                   Primary crops
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="bg-surface-container text-on-surface px-3 py-1 rounded-lg font-medium border border-outline-variant/10">
-                    Maize
-                  </span>
-                  <span className="bg-surface-container text-on-surface px-3 py-1 rounded-lg font-medium border border-outline-variant/10">
-                    Cassava
-                  </span>
+                  {displayPrimaryCrops ? (
+                    displayPrimaryCrops.map((crop) => (
+                      <span
+                        key={crop}
+                        className="bg-surface-container text-on-surface px-3 py-1 rounded-lg font-medium border border-outline-variant/10"
+                      >
+                        {crop}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-on-surface-variant text-sm">
+                      Not set
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -452,22 +1256,10 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-2">
                   <Mountain className="h-5 w-5 text-tertiary" />
                   <span className="text-xl font-bold text-on-surface">
-                    Loamy Clay
+                    {displaySoilType}
                   </span>
                 </div>
               </div>
-            </div>
-
-            <div className="mt-12 p-6 rounded-lg bg-surface-container-low border-l-4 border-primary">
-              <h3 className="font-bold mb-2 flex items-center gap-2">
-                <Brain className="h-5 w-5 text-primary" />
-                AI Seasonal Tip
-              </h3>
-              <p className="text-on-surface-variant leading-relaxed">
-                Soil moisture levels in Kano are currently optimal for Cassava
-                maturation. Consider adjusting irrigation cycles in Plot B to
-                conserve water during the upcoming dry spell.
-              </p>
             </div>
           </section>
 
@@ -523,7 +1315,7 @@ export default function ProfilePage() {
                 <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                   Primary Phone
                 </p>
-                <p className="font-headline font-bold">+234 803 123 4567</p>
+                <p className="font-headline font-bold">{displayPhoneNumber}</p>
               </div>
             </div>
             <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center gap-4">
@@ -534,9 +1326,7 @@ export default function ProfilePage() {
                 <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                   Registered Email
                 </p>
-                <p className="font-headline font-bold">
-                  {user?.email || "No email linked"}
-                </p>
+                <p className="font-headline font-bold">{displayEmail}</p>
               </div>
             </div>
             <div className="bg-primary p-6 rounded-xl shadow-lg flex items-center justify-center gap-3 text-white cursor-pointer hover:bg-primary/90 transition-colors">

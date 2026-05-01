@@ -41,7 +41,7 @@ describe("Nav", () => {
     useCurrentUserMock.mockReturnValue({ user: { photoURL: null } });
 
     render(<Nav />);
-    const profileImg = screen.getByAltText("Farmer's profile picture");
+    const profileImg = screen.getByAltText("Profile picture");
     expect(profileImg.getAttribute("src")).toContain("googleusercontent.com");
   });
 
@@ -52,7 +52,7 @@ describe("Nav", () => {
     });
 
     render(<Nav />);
-    const profileImg = screen.getByAltText("Farmer's profile picture");
+    const profileImg = screen.getByAltText("Profile picture");
     expect(profileImg.getAttribute("src")).toBe("https://example.com/user.jpg");
   });
 
@@ -71,7 +71,7 @@ describe("Nav", () => {
     usePathnameMock.mockReturnValue("/app/profile");
     render(<Nav />);
 
-    const profileImg = screen.getByAltText("Farmer's profile picture");
+    const profileImg = screen.getByAltText("Profile picture");
     expect(profileImg.className).toContain("border-primary");
   });
 
@@ -79,9 +79,17 @@ describe("Nav", () => {
     usePathnameMock.mockReturnValue("/app");
     render(<Nav />);
 
-    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/app");
-    expect(screen.getByRole("link", { name: "Diagnose" }).getAttribute("href")).toBe("/app/diagnoise");
-    expect(screen.getByRole("link", { name: "Advise" }).getAttribute("href")).toBe("/app/adivise");
-    expect(screen.getByRole("link", { name: "Profile" }).getAttribute("href")).toBe("/app/profile");
+    expect(
+      screen.getByRole("link", { name: "Dashboard" }).getAttribute("href"),
+    ).toBe("/app");
+    expect(
+      screen.getByRole("link", { name: "Diagnose" }).getAttribute("href"),
+    ).toBe("/app/diagnoise");
+    expect(
+      screen.getByRole("link", { name: "Advise" }).getAttribute("href"),
+    ).toBe("/app/adivise");
+    expect(
+      screen.getByRole("link", { name: "Profile" }).getAttribute("href"),
+    ).toBe("/app/profile");
   });
 });

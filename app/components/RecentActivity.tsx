@@ -27,10 +27,8 @@ const RecentActivity = () => {
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/activities/?uid=${user.uid}`,
-          {
-            headers: { "ngrok-skip-browser-warning": "true" },
-          },
+          `${process.env.NEXT_PUBLIC_API_URL}/activities/?uid=${user.uid}` ||
+            "http://localhost:8000/activities/?uid=${user.uid}",
         );
         if (!response.ok) throw new Error("Failed to fetch activities");
         const data = await response.json();
@@ -82,11 +80,11 @@ const RecentActivity = () => {
                 className="flex items-center gap-6 p-4 bg-surface-container-low rounded-lg group hover:bg-surface-container-high transition-colors cursor-pointer"
               >
                 <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-surface-variant border border-outline-variant/30">
-                    <img
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      alt={topResult.label}
-                      src={buildActivityImageUrl(activity.image_name)}
-                    />
+                  <img
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    alt={topResult.label}
+                    src={buildActivityImageUrl(activity.image_name)}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
